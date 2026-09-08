@@ -1,148 +1,169 @@
-# Documento de Especificación de Requerimientos del Sistema (ERS)
+Documento de Especificación de Requerimientos del Sistema (ERS)
+Nombre del proyecto: GreenTech
 
-## Proyecto: GREENTECH-ITSA
+Nombre completo: Sistema Móvil, Multi-Plataforma e IoT para viveros
 
-**Sistema de Gestión Inteligente de Vivero**
+Área de aplicación: Viveros comerciales de la región de Cabrera en Atlixco, Puebla
 
----
+1. Requerimientos Funcionales (RF)
+Módulo 1: Autenticación, Usuarios y Control de Acceso (App Móvil Operativa)
+RF-01. Inicio de Sesión (Login)
 
-# 1. Requerimientos Funcionales (RF)
+El sistema debe permitir al personal operativo y administradores autenticarse en la aplicación móvil utilizando sus credenciales (correo electrónico/usuario y contraseña).
 
-Los requerimientos funcionales definen lo que el sistema debe hacer directamente para resolver las problemáticas de pérdida de inventario, riego ineficiente, falta de trazabilidad y desinformación.
+RF-02. Cierre de Sesión (Logout)
 
-## Módulo 1: Identificación y Acceso por Código QR
+El sistema debe permitir cerrar la sesión activa en la aplicación móvil, invalidando el token de acceso para proteger la información operativa en campo.
 
-### RF-01. Generación de Códigos QR Dinámicos
+RF-03. Administración y Registro de Usuarios (CRUD)
 
-El sistema debe generar un código QR único asignable a una maceta individual o a un lote completo de cultivo desde el registro inicial.
+El sistema debe permitir al rol Administrador registrar, consultar, actualizar roles y desactivar cuentas del personal de campo.
 
-### RF-02. Vista Pública (Ficha Técnica para Cliente)
+RF-04. Recuperación y Restablecimiento de Contraseña
 
-Al escanear el QR sin autenticación previa, el sistema debe desplegar una página informativa que contenga:
+El sistema debe permitir solicitar el restablecimiento de contraseña mediante el envío de un enlace con token temporal al correo registrado.
 
-- Nombre común y nombre científico de la planta.
-- Requerimientos de luz y frecuencia de riego.
-- Nivel de toxicidad para mascotas.
-- Recomendaciones post-compra.
+RF-05. Gestión de Perfil Operativo
 
-### RF-03. Vista Privada (Panel Operativo para Personal)
+El sistema debe permitir a los usuarios autenticados consultar y actualizar su información de contacto y cambiar su clave de acceso.
 
-Al escanear el QR desde un dispositivo autenticado, el sistema debe desplegar la bitácora operativa permitiendo registrar:
+Módulo 2: Trazabilidad e Identificación por Código QR
+RF-06. Generación e Impresión de Códigos QR Únicos
 
-- Eventos de riego y fertilización.
-- Registro de podas y cambios de sustrato o maceta.
-- Cambio manual o automático de estado de salud.
+El sistema debe generar un código QR único e irrepetible para cada ejemplar o lote registrado en el vivero.
 
----
+RF-07. Portal Web de Consulta Pública (Ficha Técnica para Cliente)
 
-## Módulo 2: Gestión de Riegos y Mantenimiento
+Al escanear el código QR desde cualquier navegador web sin necesidad de instalar una aplicación, el portal debe desplegar:
 
-### RF-04. Parametrización de Riego por Especie
+Nombre común y nombre científico del ejemplar.
 
-El sistema debe permitir definir matrices de riego según la especie, tipo de sustrato, etapa de desarrollo y época del año.
+Requerimientos hídricos, de luz y tipo de sustrato.
 
-### RF-05. Trazabilidad y Confirmación de Tareas
+Nivel de toxicidad para mascotas.
 
-Al realizar una labor de riego o fertilización, el operador debe escanear el QR para registrar la tarea. El sistema almacenará automáticamente la marca de tiempo (timestamp) y el ID del usuario.
+Recomendaciones de cuidado post-compra.
 
-### RF-06. Tablero de Alertas de Mantenimiento
+RF-08. Vista Privada Operativa (App Móvil)
 
-El sistema debe emitir alertas visuales y notificaciones al encargado del vivero sobre lotes o plantas con retraso o incumplimiento en su ventana de riego programada.
+Al escanear el QR desde la aplicación móvil por un trabajador autenticado, el sistema debe abrir la bitácora operativa para registro de riego, fertilización, podas y síntomas.
 
----
+Módulo 3: Telemetría e Infraestructura IoT de Riego Automatizado
+RF-09. Parametrización de Riego por Especie y Sustrato
 
-## Módulo 3: Monitoreo de Madurez y Protocolo de Descarte
+El sistema debe permitir definir esquemas y matrices de riego según la especie, etapa de desarrollo, tipo de sustrato y condiciones climáticas de Cabrera, Atlixco.
 
-### RF-07. Semáforo de Estado de Salud y Comercialización
+RF-10. Monitoreo de Humedad y Temperatura vía ESP32
 
-Cada planta o lote debe contar con un estado visual de salud:
+El sistema IoT debe capturar periódicamente datos en tiempo real de humedad del sustrato (sensores capacitivos) y temperatura ambiental mediante microcontroladores ESP32.
 
-- **Verde — Listo para Venta:** Cumple con los parámetros de madurez, altura, follaje y floración.
-- **Amarillo — En Crecimiento / Cuarentena:** En desarrollo normal o bajo tratamiento recuperativo por plaga leve o estrés.
-- **Rojo — Baja / Descarte:** Pérdida por plaga irreversible o muerte.
+RF-11. Activación Automatizada de Electroválvulas
 
-### RF-08. Publicación Automática en Catálogo
+El backend relacional y el motor inferencial deben enviar instrucciones a las electroválvulas para iniciar o detener el riego automáticamente cuando la humedad del sustrato caiga por debajo del umbral mínimo configurado para cada especie.
 
-Al cambiar el estado a Verde, el sistema debe publicar o habilitar la planta en el inventario o catálogo del punto de venta de forma automática.
+RF-12. Registro y Confirmación de Tareas de Campo
 
-### RF-09. Protocolo Automático de Aislamiento
+El personal operativo podrá confirmar tareas manuales de riego o fertilización en la app móvil mediante el escaneo del QR, almacenando automáticamente el ID del trabajador y marca de tiempo (timestamp).
 
-Al marcar un lote o planta en Rojo, el sistema debe generar una orden de retiro inmediato dirigida al personal para aislamiento o descarte rápido, previniendo contagios.
+RF-13. Tablero de Alertas de Mantenimiento e Inconsistencia Hídrica
 
-### RF-10. Proyección de Tiempo a Venta
+El sistema debe generar alertas visuales y notificaciones sobre fallas en el riego, desviaciones en los niveles de humedad o retrasos en la atención del cultivo.
 
-El sistema debe calcular y mostrar la fecha estimada en que la planta alcanzará el estado "Listo para Venta" basándose en su fecha de propagación o siembra.
+Módulo 4: Control de Madurez, Reporte de Síntomas y Protocolo de Descarte
+RF-14. Semáforo de Estado de Salud y Comercialización
 
----
+Cada planta o lote debe contar con un estado visual dentro de la plataforma:
 
-## Módulo 4: Funcionalidades Adicionales e Integraciones
+Verde — Listo para Venta: Planta con desarrollo óptimo en altura, follaje y floración.
 
-### RF-11. Monitoreo e Integración IoT
+Amarillo — En Crecimiento / Cuarentena: Planta en desarrollo o bajo seguimiento preventivo.
 
-El sistema debe recibir datos en tiempo real de sensores IoT de humedad de suelo, temperatura ambiental e intensidad de luz, y disparar alertas de riego automáticas si los niveles caen por debajo del umbral tolerado.
+Rojo — Baja / Descarte: Ejemplar irreversiblemente dañado o infectado.
 
-### RF-12. Módulo Post-Venta para Clientes
+RF-15. Registro de Síntomas en Campo
 
-El cliente podrá registrar en una Web App el QR de la planta adquirida para recibir recordatorios programados de riego y fertilización en su hogar.
+El personal operativo debe poder reportar desde la aplicación móvil los síntomas visibles de la planta (hojas amarillas, marchitez, machas o signos fúngicos) para actualizar de inmediato la bitácora del cultivo.
 
-### RF-13. Registro de Merma y Compostaje
+RF-16. Protocolo Automático de Aislamiento y Descarte
 
-El sistema debe permitir registrar el peso en kg de la biomasa descartada correspondiente a plantas en estado Rojo y derivarla a un contador global de insumos para compostaje interno.
+Al marcar una planta o lote en estado Rojo debido a hongos o plagas, el sistema debe emitir una orden prioritaria de retiro e instruir el aislamiento o descarte inmediato para evitar la propagación en el vivero.
 
-### RF-14. Integración con Punto de Venta (POS)
+RF-17. Proyección de Tiempo a Venta
 
-Al procesarse la venta de un QR en el POS, el sistema debe cambiar automáticamente su estado a "Vendida", removiéndola del inventario activo sin intervención manual.
+El sistema debe calcular y mostrar la fecha estimada en la que el cultivo alcanzará el estado "Verde - Listo para Venta" en función de la fecha de siembra y especie.
 
----
+Módulo 5: Backend Relacional, Motor Inferencial e Integración
+RF-18. Centralización de Datos en Backend Relacional
 
-# 2. Requerimientos No Funcionales (RNF)
+El backend relacional debe coordinar e integrar la información de las lecturas IoT, solicitudes del portal web público, actividades de la app móvil y reglas de negocio.
 
-Los requerimientos no funcionales establecen los criterios de calidad, rendimiento, seguridad y experiencia de uso del sistema GREENTECH-ITSA.
+RF-19. Motor Inferencial de Reglas de Cultivo
 
-## Rendimiento y Escalabilidad
+El sistema debe procesar las variables de humedad, temperatura y síntomas registrados mediante un motor inferencial para sugerir la estimación de venta, tiempos de descarte o ajustes en la frecuencia de riego.
 
-### RNF-01. Tiempo de Respuesta en Escaneo
+RF-20. Habilitación Automática en Catálogo
 
-La lectura y despliegue de la ficha técnica pública o privada tras escanear el QR no debe demorar más de 2 segundos con conexión móvil promedio 3G/4G.
+Al cambiar el estado de un lote a Verde, el sistema debe habilitarlo automáticamente en el catálogo o punto de venta del vivero.
 
-### RNF-02. Capacidad de Ingesta IoT
+RF-21. Registro de Merma y Biomasa para Compostaje
 
-El backend debe ser capaz de procesar lecturas periódicas, cada 5 a 15 minutos, de al menos 100 sensores IoT concurrentes sin degradación en el tiempo de respuesta.
+El sistema debe permitir registrar el peso en kilogramos de la biomasa descartada (plantas en estado Rojo) para su contabilización y reutilización en procesos de compostaje interno.
 
-## Usabilidad y Accesibilidad
+2. Requerimientos No Funcionales (RNF)
+Rendimiento y Escalabilidad
+RNF-01. Tiempo de Respuesta en Escaneo QR
 
-### RNF-03. Diseño Responsivo y Móvil Primero
+El despliegue de la ficha técnica pública en la web o de la bitácora operativa en la app móvil no debe demorar más de 2 segundos bajo redes móviles estándar (3G/4G/5G).
 
-La interfaz para el personal de vivero y clientes debe ser 100% responsiva y optimizada para smartphones y tablets.
+RNF-02. Capacidad de Ingesta Telemétrica IoT
 
-### RNF-04. Facilidad de Uso en Campo
+El backend debe procesar lecturas continuas enviadas por múltiples microcontroladores ESP32 cada 5 a 15 minutos sin generar cuello de botella en la base de datos relacional.
 
-Las acciones del personal, como marcar riego o cambiar estado, deben ejecutarse en un máximo de 3 clics o toques después de escanear el código QR.
+Usabilidad y Accesibilidad
+RNF-03. Diseño Responsivo y Móvil Primero
 
-### RNF-05. Acceso sin Instalación
+La interfaz de la app móvil para trabajadores y el portal web para clientes deben ser totalmente adaptables a teléfonos inteligentes y tabletas.
 
-La vista del cliente no debe exigir la descarga ni instalación de aplicaciones nativas; debe cargarse directamente en cualquier navegador web móvil como Chrome, Safari o Firefox.
+RNF-04. Acceso al Portal Público sin Instalación
 
-## Seguridad y Control de Acceso
+El cliente debe acceder a la ficha técnica directamente desde el navegador web de su dispositivo móvil (Chrome, Safari, Firefox) sin requerir instalación previa de software.
 
-### RNF-06. Control de Acceso Basado en Roles (RBAC)
+RNF-05. Usabilidad Operativa en Campo
 
-El sistema debe restringir estrictamente el acceso a las funciones operativas mediante tres roles:
+Las tareas operativas del trabajador (confirmar riego, registrar síntomas o cambiar estado) deben completarse en un máximo de 3 toques en la pantalla tras escanear el QR.
 
-- **Cliente:** acceso público.
-- **Operador de Vivero:** lectura y escritura de bitácora.
-- **Administrador:** configuración de parámetros y métricas.
+Seguridad y Control de Acceso
+RNF-06. Control de Acceso Basado en Roles (RBAC)
 
-### RNF-07. Protección de Datos e Inmutabilidad de Registros
+El acceso a las funcionalidades del sistema debe estar segmentado:
 
-Los registros con marca de tiempo y usuario no podrán ser editados ni eliminados por operadores para garantizar la trazabilidad de las tareas realizadas.
+Cliente: Acceso exclusivo de lectura al portal web público.
 
-## Restricciones del Entorno Físico y Disponibilidad
+Personal Operativo (Trabajadores de campo): Acceso en la app móvil para lectura y registro de bitácoras, escaneo QR y síntomas.
 
-### RNF-08. Durabilidad Física del Etiquetado
+Administrador: Control total de configuraciones, usuarios, parámetros IoT, motor inferencial y métricas globales.
 
-Los códigos QR impresos deben cumplir especificaciones de material resistente a humedad constante, riego por aspersión y exposición directa a radiación UV.
+RNF-07. Cifrado y Comunicaciones Seguras
 
-### RNF-09. Disponibilidad del Servicio
+Las contraseñas de los usuarios deben almacenarse con algoritmos de hashing seguros (Bcrypt/Argon2). Toda la transferencia de datos entre app, web, IoT y backend debe realizarse bajo protocolo HTTPS/TLS.
 
-El sistema debe contar con una disponibilidad del 99.5% durante el horario operativo del vivero.
+RNF-08. Autenticación por Tokens (JWT)
+
+La app móvil debe gestionar la sesión mediante tokens JSON Web Tokens (JWT) con mecanismos de expiración y renovación segura.
+
+RNF-09. Inmutabilidad de Registros de Trazabilidad
+
+Los registros de riego, fertilización y marcas de tiempo (timestamps) generados en campo no podrán ser alterados ni borrados por el personal operativo para garantizar la trazabilidad de la producción.
+
+Arquitectura Hardware y Entorno Físico
+RNF-10. Integración y Tolerancia Hardware IoT
+
+Los módulos embebidos basados en ESP32, sensores capacitivos de humedad y electroválvulas deben contar con comunicación tolerante a cortes temporales de red local, reintentando el envío de telemetría al reconectarse.
+
+RNF-11. Durabilidad de Etiquetado QR
+
+Las etiquetas físicas con códigos QR para el vivero deben imprimirse en materiales resistentes al agua, humedad constante, riego por aspersión y radiación UV directa.
+
+RNF-12. Disponibilidad del Sistema
+
+El backend relacional y la plataforma de servicios deben garantizar una disponibilidad de servicio del 99.5% durante el horario de operación del vivero.
