@@ -63,6 +63,7 @@ import com.greentech.app.ui.screens.common.AyudaLogic
 import com.greentech.app.ui.screens.common.IntroduccionEvent
 import com.greentech.app.ui.screens.common.IntroduccionLogic
 import com.greentech.app.ui.screens.common.IntroduccionScreen
+import com.greentech.app.ui.components.SolicitudNotificaciones
 import com.greentech.app.ui.components.ControlIntroduccion
 import com.greentech.app.ui.components.LocalIntroduccion
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -302,6 +303,7 @@ private fun ConIntroduccion(panel: @Composable () -> Unit) {
     val control = remember(logic) { ControlIntroduccion { logic.onEvent(IntroduccionEvent.Abrir) } }
     CompositionLocalProvider(LocalIntroduccion provides control) { panel() }
     IntroduccionScreen(estado, logic::onEvent)
+    SolicitudNotificaciones(introVisible = estado.visible)
 }
 
 /** Pantallas de gestión: solo existen en el grafo del administrador. */

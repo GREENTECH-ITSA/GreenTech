@@ -27,6 +27,13 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.PhotoCamera
+import com.greentech.app.platform.EstadoPermiso
+import com.greentech.app.platform.Permiso
+import com.greentech.app.platform.rememberEstadoPermiso
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -106,6 +113,8 @@ fun PerfilScreen(estado: PerfilUiState, onEvent: (PerfilEvent) -> Unit) {
                 Opcion(Icons.Outlined.AutoStories, Textos.Perfil.INTRO, Textos.Perfil.INTRO_DESC) { intro.abrir() }
             }
 
+            Seccion(Textos.Permisos.TITULO, ancho) { Permisos() }
+
             Seccion(Textos.Perfil.ACERCA_DE, ancho) { AcercaDe() }
 
             GtButton(
@@ -175,6 +184,39 @@ private fun AcercaDe() {
         Column(Modifier.weight(1f)) {
             Text(Textos.Perfil.VERSION, style = MaterialTheme.typography.titleMedium)
             Text(Textos.Perfil.ACERCA_DESC, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** Estado de Cámara y Notificaciones; tocar una fila abre los ajustes de la app. Se revisa al volver. */
+@Composable
+private fun Permisos() {
+    FilaPermiso(Icons.Outlined.PhotoCamera, Textos.Permisos.CAMARA, rememberEstadoPermiso(Permiso.CAMARA))
+    FilaPermiso(Icons.Outlined.Notifications, Textos.Permisos.NOTIFICACIONES, rememberEstadoPermiso(Permiso.NOTIFICACIONES))
+}
+
+@Composable
+private fun FilaPermiso(icono: ImageVector, titulo: String, permiso: EstadoPermiso) {
+    val interaccion = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val c = GreenTechTheme.colors
+    Surface(onClick = permiso::abrirAjustes, color = Color.Transparent, interactionSource = interaccion, modifier = Modifier.efectoPresion(interaccion)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icono, null, tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(titulo, style = MaterialTheme.typography.titleMedium)
+                Text(Textos.Permisos.CAMBIAR_EN_AJUSTES, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.width(8.dp))
+            // Texto + ícono: el estado no depende solo del color.
+            if (permiso.concedido) {
+                StatusChip(Textos.Permisos.PERMITIDO, c.exito, icono = Icons.Outlined.CheckCircle)
+            } else {
+                StatusChip(Textos.Permisos.NO_PERMITIDO, c.advertencia, icono = Icons.Outlined.Block)
+            }
         }
     }
 }

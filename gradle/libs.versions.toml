@@ -5,6 +5,9 @@ compose-multiplatform = "1.12.1"
 compose-material3 = "1.12.0-alpha03"
 compose-material-icons = "1.7.3"
 androidx-activity = "1.13.0"
+androidx-core = "1.19.1"
+camerax = "1.6.2"
+mlkit-barcode-scanning = "17.3.0"
 androidx-lifecycle = "2.11.0"
 androidx-navigation = "2.9.2"
 koin = "4.2.2"
@@ -34,6 +37,13 @@ androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecy
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+# Cámara (solo Android): CameraX + ML Kit con el modelo empaquetado (funciona sin internet ni Play Services)
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode-scanning" }
 # Koin
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core" }

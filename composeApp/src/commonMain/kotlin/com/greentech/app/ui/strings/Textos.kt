@@ -204,6 +204,9 @@ object Textos {
         const val MANUAL_AYUDA = "Está impreso debajo del QR. Empieza con GT-"
         const val FORMATO_INVALIDO = "Revisa el código: empieza con GT- y lleva 10 letras o números. Ej. GT-8F2A91C0D4."
         const val NO_ENCONTRADO = "No encontramos un lote con el código %s. Revisa que esté bien escrito."
+        const val LOTE_NO_ENCONTRADO = "Lote no encontrado"
+        const val CODIGO_LEIDO = "Código leído"
+        const val ZOOM = "Cambiar zoom"
     }
 
     object Detalle {
@@ -243,6 +246,27 @@ object Textos {
             "Elige la etapa a la que pasaron las plantas; la actual está marcada como \"Actual\"."
     }
 
+    object Permisos {
+        const val TITULO = "Permisos"
+        const val PERMITIR = "Permitir"
+        const val AHORA_NO = "Ahora no"
+        const val ABRIR_AJUSTES = "Abrir ajustes"
+        const val PERMITIDO = "Permitido"
+        const val NO_PERMITIDO = "No permitido"
+        const val CAMARA = "Cámara"
+        const val CAMARA_TITULO = "Usar la cámara"
+        const val CAMARA_MENSAJE = "Para escanear el QR de los lotes, GreenTech necesita usar la cámara."
+        const val CAMARA_FOTO_MENSAJE = "Para tomar fotos de tus observaciones, GreenTech necesita usar la cámara."
+        const val SIN_CAMARA_TITULO = "Sin acceso a la cámara"
+        const val SIN_CAMARA_MENSAJE = "Permite la cámara para escanear o escribe el código impreso debajo del QR."
+        const val SIN_CAMARA_AJUSTES = "Activa la cámara en los ajustes del teléfono o escribe el código impreso debajo del QR."
+        const val PERMITIR_CAMARA = "Permitir cámara"
+        const val NOTIFICACIONES = "Notificaciones"
+        const val NOTIFICACIONES_TITULO = "Activar notificaciones"
+        const val NOTIFICACIONES_MENSAJE = "Te avisaremos si la humedad o la temperatura de un lote salen de rango."
+        const val CAMBIAR_EN_AJUSTES = "Toca para cambiarlo en los ajustes del teléfono"
+    }
+
     object Observacion {
         const val TITULO = "Nueva observación"
         const val TEXTO = "¿Qué observaste?"
@@ -252,6 +276,10 @@ object Textos {
         const val FOTO = "Agregar foto"
         const val FOTO_AGREGADA = "Foto agregada"
         const val QUITAR_FOTO = "Quitar foto"
+        const val FOTO_TITULO = "Agregar foto"
+        const val TOMAR_FOTO = "Tomar foto"
+        const val ELEGIR_GALERIA = "Elegir de la galería"
+        const val FOTO_DESCRIPCION = "Foto de la observación"
         const val GUARDAR = "Guardar observación"
         const val FALTA_TEXTO = "Descripción"
     }

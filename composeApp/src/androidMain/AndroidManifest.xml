@@ -1,13 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Cámara: escanear QR, linterna (torch de CameraX) y fotos de observaciones -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Vibración para la retroalimentación háptica -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+    <!-- Notificaciones (alertas de sensores), Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Red: conexión futura con Supabase y detección de modo sin conexión -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Guardar la imagen del QR en la galería solo en Android 8–9; en 10+ se usa MediaStore sin permiso -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!-- La app se puede instalar en equipos sin cámara o sin flash (se ofrece "Escribir código del lote") -->
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+
+    <!-- Apps que pueden recibir la foto de "Tomar foto" (visibilidad de paquetes, Android 11+) -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 
     <application
         android:name=".GreenTechApplication"
@@ -27,5 +48,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Comparte la imagen del QR y recibe la foto que toma la cámara -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

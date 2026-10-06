@@ -5,7 +5,7 @@ import com.russhwolf.settings.Settings
 /**
  * Preferencias de uso del dispositivo que mejoran la experiencia y persisten entre aperturas
  * (multiplatform-settings): la zona del último lote registrado (valor por defecto del formulario)
- * y qué usuarios ya vieron la introducción de primer uso.
+ * qué usuarios ya vieron la introducción de primer uso y si ya se explicó el permiso de notificaciones.
  */
 class PreferenciasUso(private val settings: Settings) {
 
@@ -19,8 +19,14 @@ class PreferenciasUso(private val settings: Settings) {
 
     fun marcarIntroVista(usuarioId: String) = settings.putBoolean(CLAVE_INTRO + usuarioId, true)
 
+    /** Se pregunta una sola vez por equipo; después se cambia desde Perfil → Permisos. */
+    var notificacionesPreguntadas: Boolean
+        get() = settings.getBoolean(CLAVE_NOTIFICACIONES, false)
+        set(valor) = settings.putBoolean(CLAVE_NOTIFICACIONES, valor)
+
     private companion object {
         const val CLAVE_ZONA = "formularios.ultima_zona"
         const val CLAVE_INTRO = "intro.vista."
+        const val CLAVE_NOTIFICACIONES = "permisos.notificaciones_preguntadas"
     }
 }
