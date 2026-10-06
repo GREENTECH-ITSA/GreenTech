@@ -11,6 +11,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.greentech.app.platform.MiniaturaFoto
+import com.greentech.app.platform.Permiso
+import com.greentech.app.platform.rememberEstadoPermiso
+import com.greentech.app.platform.rememberSelectorFoto
+import com.greentech.app.ui.components.ConfirmSheet
+import com.greentech.app.ui.components.GtBottomSheet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,6 +60,9 @@ import com.greentech.shared.domain.model.EstadoSalud
 
 @Composable
 fun ObservacionScreen(estado: ObservacionUiState, onEvent: (ObservacionEvent) -> Unit) {
+    val selector = rememberSelectorFoto { onEvent(ObservacionEvent.FotoElegida(it)) }
+    val permisoCamara = rememberEstadoPermiso(Permiso.CAMARA) { permitido -> if (permitido) selector.tomarFoto() }
+    var explicarCamara by rememberSaveable { mutableStateOf(false) }
     FormularioScaffold(
         titulo = Textos.Observacion.TITULO,
         subtitulo = estado.lote.contexto(),
@@ -87,7 +106,10 @@ fun ObservacionScreen(estado: ObservacionUiState, onEvent: (ObservacionEvent) ->
                     Box(
                         Modifier.size(88.dp).clip(GtShapes.campo).background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center,
-                    ) { Icon(Icons.Outlined.Image, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp)) }
+                    ) {
+                        Icon(Icons.Outlined.Image, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp))
+                        estado.fotoUri?.let { MiniaturaFoto(it, Textos.Observacion.FOTO_DESCRIPCION, Modifier.matchParentSize()) }
+                    }
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(Textos.Observacion.FOTO_AGREGADA, style = MaterialTheme.typography.titleSmall)
@@ -103,6 +125,61 @@ fun ObservacionScreen(estado: ObservacionUiState, onEvent: (ObservacionEvent) ->
                     variante = GtButtonVariant.Tonal, icono = Icons.Outlined.AddAPhoto,
                 )
             }
+        }
+    }
+    if (estado.mostrarOpcionesFoto) {
+        HojaAgregarFoto(
+            puedeTomarFoto = selector.puedeTomarFoto,
+            onTomarFoto = {
+                onEvent(ObservacionEvent.CerrarOpcionesFoto)
+                // El permiso de cámara se explica antes de pedirlo (o se manda a Ajustes si se negó para siempre).
+                if (permisoCamara.concedido) selector.tomarFoto() else explicarCamara = true
+            },
+            onElegirGaleria = {
+                onEvent(ObservacionEvent.CerrarOpcionesFoto)
+                selector.elegirDeGaleria()
+            },
+            onCerrar = { onEvent(ObservacionEvent.CerrarOpcionesFoto) },
+        )
+    }
+    if (explicarCamara) {
+        ConfirmSheet(
+            titulo = Textos.Permisos.CAMARA_TITULO,
+            mensaje = Textos.Permisos.CAMARA_FOTO_MENSAJE,
+            textoConfirmar = if (permisoCamara.negadoPermanente) Textos.Permisos.ABRIR_AJUSTES else Textos.Permisos.PERMITIR,
+            textoCancelar = Textos.Permisos.AHORA_NO,
+            icono = Icons.Outlined.PhotoCamera,
+            onConfirmar = {
+                explicarCamara = false
+                permisoCamara.solicitar()
+            },
+            onCancelar = { explicarCamara = false },
+        )
+    }
+}
+
+/** "Agregar foto": tomarla con la cámara o elegirla de la galería. */
+@Composable
+private fun HojaAgregarFoto(
+    puedeTomarFoto: Boolean,
+    onTomarFoto: () -> Unit,
+    onElegirGaleria: () -> Unit,
+    onCerrar: () -> Unit,
+) {
+    GtBottomSheet(onCerrar = onCerrar) {
+        Column(
+            Modifier.padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(Textos.Observacion.FOTO_TITULO, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            if (puedeTomarFoto) {
+                GtButton(Textos.Observacion.TOMAR_FOTO, onTomarFoto, icono = Icons.Outlined.PhotoCamera)
+            }
+            GtButton(
+                Textos.Observacion.ELEGIR_GALERIA, onElegirGaleria,
+                variante = if (puedeTomarFoto) GtButtonVariant.Tonal else GtButtonVariant.Primario,
+                icono = Icons.Outlined.PhotoLibrary,
+            )
         }
     }
 }

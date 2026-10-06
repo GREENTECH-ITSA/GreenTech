@@ -26,6 +26,8 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.greentech.app.ui.components.CheckAnimado
+import com.greentech.app.platform.Permiso
+import com.greentech.app.platform.rememberEstadoPermiso
 import com.greentech.app.ui.components.GtCard
 import com.greentech.app.ui.components.contexto
 import androidx.compose.ui.Alignment
@@ -68,6 +70,10 @@ import org.jetbrains.compose.resources.painterResource
  */
 @Composable
 fun QrLoteScreen(estado: QrLoteUiState, onEvent: (QrLoteEvent) -> Unit) {
+    // Solo en Android 8–9 hace falta permiso para guardar en la galería; en 10+ ya está concedido.
+    val permisoGuardar = rememberEstadoPermiso(Permiso.GUARDAR_IMAGEN) { permitido ->
+        if (permitido) onEvent(QrLoteEvent.GuardarImagen)
+    }
     GtScaffold(
         topBar = {
             GtTopBar(
@@ -101,7 +107,9 @@ fun QrLoteScreen(estado: QrLoteUiState, onEvent: (QrLoteEvent) -> Unit) {
                     )
                 }
                 GtButton(
-                    Textos.Qr.GUARDAR, { onEvent(QrLoteEvent.GuardarImagen) }, ancho,
+                    Textos.Qr.GUARDAR,
+                    { if (permisoGuardar.concedido) onEvent(QrLoteEvent.GuardarImagen) else permisoGuardar.solicitar() },
+                    ancho,
                     icono = Icons.Outlined.Download, cargando = estado.guardando,
                 )
                 if (estado.recienCreado) {

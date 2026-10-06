@@ -4,7 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 
 /** Permisos que la app pide en tiempo de ejecución, solo cuando hacen falta. */
-enum class Permiso { CAMARA, NOTIFICACIONES }
+enum class Permiso {
+    CAMARA,
+    NOTIFICACIONES,
+
+    /** Guardar imágenes en la galería: solo existe en Android 8–9 (en 10+ siempre está concedido). */
+    GUARDAR_IMAGEN,
+}
 
 /**
  * Estado observable de un permiso. Se vuelve a revisar al regresar a la app (ON_RESUME),

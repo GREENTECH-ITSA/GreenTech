@@ -21,6 +21,9 @@ data class ObservacionUiState(
     val salud: EstadoSalud = EstadoSalud.SANA,
     val saludInicial: EstadoSalud = EstadoSalud.SANA,
     val conFoto: Boolean = false,
+    /** URI local de la foto (cámara o galería). */
+    val fotoUri: String? = null,
+    val mostrarOpcionesFoto: Boolean = false,
     val cargando: Boolean = false,
 ) {
     val hayCambios: Boolean get() = texto.isNotBlank() || conFoto || salud != saludInicial
@@ -33,6 +36,8 @@ sealed interface ObservacionEvent {
     data class TextoCambio(val valor: String) : ObservacionEvent
     data class ElegirSalud(val salud: EstadoSalud) : ObservacionEvent
     data object AgregarFoto : ObservacionEvent
+    data object CerrarOpcionesFoto : ObservacionEvent
+    data class FotoElegida(val uri: String) : ObservacionEvent
     data object QuitarFoto : ObservacionEvent
     data object Guardar : ObservacionEvent
     data object Volver : ObservacionEvent
@@ -59,11 +64,10 @@ class ObservacionLogic(
         when (evento) {
             is ObservacionEvent.TextoCambio -> actualizar { copy(texto = evento.valor, textoTocado = true) }
             is ObservacionEvent.ElegirSalud -> actualizar { copy(salud = evento.salud) }
-            ObservacionEvent.AgregarFoto -> {
-                // TODO(Cámara): abrir la cámara y subir la foto a Supabase Storage.
-                actualizar { copy(conFoto = true) }
-            }
-            ObservacionEvent.QuitarFoto -> actualizar { copy(conFoto = false) }
+            ObservacionEvent.AgregarFoto -> actualizar { copy(mostrarOpcionesFoto = true) }
+            ObservacionEvent.CerrarOpcionesFoto -> actualizar { copy(mostrarOpcionesFoto = false) }
+            is ObservacionEvent.FotoElegida -> actualizar { copy(conFoto = true, fotoUri = evento.uri, mostrarOpcionesFoto = false) }
+            ObservacionEvent.QuitarFoto -> actualizar { copy(conFoto = false, fotoUri = null) }
             ObservacionEvent.Volver -> emitir(UiEffect.Volver)
             ObservacionEvent.Ayuda -> emitir(UiEffect.Navegar(AppDestination.Ayuda))
             ObservacionEvent.Guardar -> guardar()
@@ -76,6 +80,7 @@ class ObservacionLogic(
         actualizar { copy(cargando = true) }
         lanzar {
             val s = estado
+            // TODO(Supabase Storage): subir s.fotoUri al bucket de observaciones y guardar la URL pública.
             when (val r = registrar(loteId, s.texto, s.salud, s.conFoto, sesion.actual()?.nombre.orEmpty())) {
                 is AppResult.Exito -> {
                     recientes.marcar(loteId, AccionLote.OBSERVACION)

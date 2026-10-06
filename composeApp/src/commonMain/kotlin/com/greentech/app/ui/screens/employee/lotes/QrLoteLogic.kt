@@ -46,7 +46,7 @@ class QrLoteLogic(
                 actualizar { copy(guardando = false) }
                 if (ok) notificarExito(Textos.Qr.GUARDADO) else notificarError(AppError.Desconocido)
             }
-            QrLoteEvent.Compartir -> if (codigo != null) {
+            QrLoteEvent.Compartir -> if (codigo != null) lanzar {
                 if (qrSaver.compartir(codigo)) notificarInfo(Textos.Qr.COMPARTIDO) else notificarError(AppError.Desconocido)
             }
             QrLoteEvent.VerDetalle -> emitir(UiEffect.Navegar(AppDestination.DetalleLote(loteId), reemplazar = true))

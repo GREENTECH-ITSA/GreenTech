@@ -99,6 +99,10 @@ fun notificationsGranted(context: Context): Boolean = NotificationManagerCompat.
 val notificationsPermission: String?
     get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.POST_NOTIFICATIONS else null
 
+/** Escritura en almacenamiento compartido: solo hace falta en Android 8–9 (null en 10+). */
+val writeStoragePermission: String?
+    get() = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) Manifest.permission.WRITE_EXTERNAL_STORAGE else null
+
 @Composable
 fun rememberPermissionState(
     permission: String?,

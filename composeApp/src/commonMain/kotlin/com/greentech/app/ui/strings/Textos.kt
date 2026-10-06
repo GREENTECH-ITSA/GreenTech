@@ -183,7 +183,7 @@ object Textos {
         const val COMPARTIR = "Compartir QR"
         const val VER_LOTE = "Ver lote"
         const val OTRO_LOTE = "Registrar otro lote"
-        const val GUARDADO = "Imagen del QR guardada en la galería"
+        const val GUARDADO = "QR guardado en la galería"
         const val COMPARTIDO = "Elige dónde compartir el QR"
         const val DESCRIPCION = "Código QR del lote"
         const val SEMBRADO = "Sembrado el"
