@@ -53,6 +53,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.GlassSurface
+import com.greentech.app.ui.components.CheckAnimado
+import com.greentech.app.ui.components.ConfirmSheet
+import com.greentech.app.ui.components.formatearNumero
+import com.greentech.app.platform.EstadoPermiso
+import com.greentech.app.platform.Permiso
+import com.greentech.app.platform.rememberEstadoPermiso
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.layout.offset
+import androidx.compose.material.icons.outlined.NoPhotography
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ZoomIn
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import com.greentech.app.ui.components.GtBottomSheet
 import com.greentech.app.ui.components.GtButton
 import com.greentech.app.ui.components.GtButtonVariant
@@ -76,9 +97,26 @@ import dev.chrisbanes.haze.rememberHazeState
 /**
  * Escanear QR: vista oscura en ambos temas (como una cámara), marco con esquinas redondeadas que
  * "respira" lento y botones flotantes de vidrio sobre la vista.
+ *
+ * [vistaCamara] dibuja la vista previa real (la provee el grafo de navegación). El permiso de cámara
+ * se explica y se pide al abrir la pantalla; sin permiso se muestra "Sin acceso a la cámara" y el
+ * botón "Escribir código del lote" sigue disponible.
  */
 @Composable
-fun EscanerQrScreen(estado: EscanerQrUiState, onEvent: (EscanerQrEvent) -> Unit) {
+fun EscanerQrScreen(
+    estado: EscanerQrUiState,
+    onEvent: (EscanerQrEvent) -> Unit,
+    vistaCamara: @Composable (Modifier) -> Unit = {},
+) {
+    val permiso = rememberEstadoPermiso(Permiso.CAMARA)
+    var explicarPermiso by rememberSaveable {
+        mutableStateOf(estado.camaraReal && !permiso.concedido && !permiso.negadoPermanente)
+    }
+    val camaraActiva = estado.camaraReal && permiso.concedido
+    val haptica = LocalHapticFeedback.current
+    LaunchedEffect(estado.detectado) {
+        if (estado.detectado) haptica.performHapticFeedback(HapticFeedbackType.Confirm)
+    }
     // La vista de cámara siempre es oscura: se fuerza el esquema oscuro (y los íconos claros de las
     // barras del sistema) solo en esta pantalla.
     BarrasSistema.ForzarOscuras()
@@ -96,15 +134,23 @@ fun EscanerQrScreen(estado: EscanerQrUiState, onEvent: (EscanerQrEvent) -> Unit)
             ) {
                 val vista = rememberHazeState()
                 Box(Modifier.widthIn(max = 360.dp).fillMaxWidth().aspectRatio(0.82f)) {
-                    Visor(Modifier.fillMaxSize().fuenteVidrio(vista))
-                    BotonesFlotantes(estado, onEvent, vista, Modifier.align(Alignment.BottomCenter).padding(12.dp))
+                    if (estado.camaraReal && !permiso.concedido) {
+                        SinAccesoCamara(permiso, Modifier.fillMaxSize())
+                    } else {
+                        Visor(Modifier.fillMaxSize().fuenteVidrio(vista), camaraActiva, estado.detectado, vistaCamara)
+                    }
+                    if (camaraActiva) {
+                        BotonesFlotantes(estado, onEvent, vista, Modifier.align(Alignment.BottomCenter).padding(12.dp))
+                    }
                 }
-                Text(
-                    if (estado.camaraReal) Textos.Escaner.INSTRUCCION else Textos.Escaner.SIN_CAMARA,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = GreenTechTheme.colors.sobreCamara,
-                    textAlign = TextAlign.Center,
-                )
+                if (!estado.camaraReal || camaraActiva) {
+                    Text(
+                        if (estado.camaraReal) Textos.Escaner.INSTRUCCION else Textos.Escaner.SIN_CAMARA,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = GreenTechTheme.colors.sobreCamara,
+                        textAlign = TextAlign.Center,
+                    )
+                }
                 // Alternativa siempre visible al escaneo: escribir el código impreso debajo del QR.
                 GtButton(
                     Textos.Escaner.MANUAL,
@@ -116,12 +162,65 @@ fun EscanerQrScreen(estado: EscanerQrUiState, onEvent: (EscanerQrEvent) -> Unit)
             }
         }
         if (estado.mostrarManual) HojaCodigoManual(estado, onEvent)
+        if (explicarPermiso) {
+            ConfirmSheet(
+                titulo = Textos.Permisos.CAMARA_TITULO,
+                mensaje = Textos.Permisos.CAMARA_MENSAJE,
+                textoConfirmar = Textos.Permisos.PERMITIR,
+                textoCancelar = Textos.Permisos.AHORA_NO,
+                icono = Icons.Outlined.PhotoCamera,
+                onConfirmar = {
+                    explicarPermiso = false
+                    permiso.solicitar()
+                },
+                onCancelar = { explicarPermiso = false },
+            )
+        }
     }
 }
 
-/** Vista tipo cámara (simulada) con el marco de esquinas redondeadas respirando lento. */
+/** Sin permiso de cámara: explica qué pasa y ofrece pedirlo otra vez o abrir Ajustes. */
 @Composable
-private fun Visor(modifier: Modifier) {
+private fun SinAccesoCamara(permiso: EstadoPermiso, modifier: Modifier) {
+    Column(
+        modifier.clip(GtShapes.mosaico).background(MaterialTheme.colorScheme.surfaceContainerLowest).padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(Icons.Outlined.NoPhotography, null, tint = GreenTechTheme.colors.sobreCamara, modifier = Modifier.size(48.dp))
+        Text(
+            Textos.Permisos.SIN_CAMARA_TITULO,
+            style = MaterialTheme.typography.titleLarge,
+            color = GreenTechTheme.colors.sobreCamara,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            if (permiso.negadoPermanente) Textos.Permisos.SIN_CAMARA_AJUSTES else Textos.Permisos.SIN_CAMARA_MENSAJE,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.size(4.dp))
+        if (permiso.negadoPermanente) {
+            GtButton(Textos.Permisos.ABRIR_AJUSTES, permiso::abrirAjustes, icono = Icons.Outlined.Settings)
+        } else {
+            GtButton(Textos.Permisos.PERMITIR_CAMARA, permiso::solicitar, icono = Icons.Outlined.PhotoCamera)
+        }
+    }
+}
+
+/**
+ * Vista de cámara con el marco de esquinas redondeadas respirando lento. Al leer un QR el marco
+ * pasa a primary y aparece el check animado.
+ */
+@Composable
+private fun Visor(
+    modifier: Modifier,
+    camaraActiva: Boolean = false,
+    detectado: Boolean = false,
+    vistaCamara: @Composable (Modifier) -> Unit = {},
+) {
     val respiracion = if (Motion.reducir) {
         1f
     } else {
@@ -130,13 +229,17 @@ private fun Visor(modifier: Modifier) {
         )
         v
     }
-    val marco = GreenTechTheme.colors.sobreCamara
     val acento = MaterialTheme.colorScheme.primary
+    val marco by animateColorAsState(if (detectado) acento else GreenTechTheme.colors.sobreCamara, Motion.rapida(), label = "marco")
     Box(
         modifier.clip(GtShapes.mosaico).background(MaterialTheme.colorScheme.surfaceContainerLowest),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(IconosModulo.qr, null, tint = marco.copy(alpha = 0.08f), modifier = Modifier.size(140.dp))
+        if (camaraActiva) {
+            vistaCamara(Modifier.fillMaxSize())
+        } else {
+            Icon(IconosModulo.qr, null, tint = marco.copy(alpha = 0.08f), modifier = Modifier.size(140.dp))
+        }
         Canvas(Modifier.fillMaxSize().padding(36.dp)) {
             val lado = size.minDimension * 0.86f * respiracion
             val ox = (size.width - lado) / 2
@@ -158,22 +261,41 @@ private fun Visor(modifier: Modifier) {
                 drawLine(marco, Offset(cx + r * dir.first, cy), Offset(cx + (r + largo) * dir.first, cy), grosor, StrokeCap.Round)
                 drawLine(marco, Offset(cx, cy + r * dir.second), Offset(cx, cy + (r + largo) * dir.second), grosor, StrokeCap.Round)
             }
-            drawCircle(acento.copy(alpha = 0.9f), radius = 4.dp.toPx(), center = Offset(size.width / 2, oy + lado / 2))
+            if (!detectado) drawCircle(acento.copy(alpha = 0.9f), radius = 4.dp.toPx(), center = Offset(size.width / 2, oy + lado / 2))
+        }
+        if (detectado) {
+            // Mismo centro que el marco (está 24 dp arriba del centro de la vista).
+            CheckAnimado(
+                Modifier.offset(y = (-24).dp).size(72.dp).semantics { contentDescription = Textos.Escaner.CODIGO_LEIDO },
+                color = acento,
+            )
         }
     }
 }
 
-/** Botón flotante de vidrio sobre la vista: linterna (alternable). */
+/**
+ * Botones flotantes de vidrio sobre la vista: linterna (solo si hay flash) y zoom ×1 / ×2,
+ * grandes para usarlos con guantes.
+ */
 @Composable
 private fun BotonesFlotantes(estado: EscanerQrUiState, onEvent: (EscanerQrEvent) -> Unit, vista: HazeState, modifier: Modifier) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        BotonVidrio(
+        if (estado.linternaDisponible) BotonVidrio(
             icono = if (estado.linterna) Icons.Outlined.FlashlightOn else Icons.Outlined.FlashlightOff,
             texto = if (estado.linterna) Textos.Escaner.LINTERNA_OFF else Textos.Escaner.LINTERNA_ON,
             vista = vista,
             activo = estado.linterna,
             onClick = { onEvent(EscanerQrEvent.AlternarLinterna) },
             soloIcono = true,
+        )
+        val decimales = if (abs(estado.zoom - estado.zoom.roundToInt()) < 0.05f) 0 else 1
+        BotonVidrio(
+            icono = Icons.Outlined.ZoomIn,
+            texto = "×${formatearNumero(estado.zoom.toDouble(), decimales)}",
+            vista = vista,
+            activo = estado.zoom >= 1.5f,
+            onClick = { onEvent(EscanerQrEvent.AlternarZoom) },
+            descripcion = Textos.Escaner.ZOOM,
         )
     }
 }
@@ -186,6 +308,7 @@ private fun BotonVidrio(
     onClick: () -> Unit,
     activo: Boolean = false,
     soloIcono: Boolean = false,
+    descripcion: String? = null,
 ) {
     val interaccion = remember { MutableInteractionSource() }
     // El gesto va en el contenido (dentro del vidrio): el efecto de desenfoque intercepta los toques
@@ -201,6 +324,7 @@ private fun BotonVidrio(
                 .heightIn(min = 56.dp)
                 .clip(GtShapes.pastilla)
                 .toggleable(activo, onValueChange = { onClick() }, role = if (soloIcono) Role.Switch else Role.Button, interactionSource = interaccion, indication = ripple())
+                .then(if (descripcion != null) Modifier.semantics(mergeDescendants = true) { contentDescription = "$descripcion, $texto" } else Modifier)
                 .padding(horizontal = if (soloIcono) 16.dp else 20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -248,11 +372,11 @@ private fun HojaCodigoManual(estado: EscanerQrUiState, onEvent: (EscanerQrEvent)
 @Preview
 @Composable
 private fun EscanerPreviewClaro() {
-    GreenTechTheme { EscanerQrScreen(EscanerQrUiState()) {} }
+    GreenTechTheme { EscanerQrScreen(EscanerQrUiState(), onEvent = {}) }
 }
 
 @Preview
 @Composable
 private fun EscanerPreviewOscuro() {
-    GreenTechTheme(modo = ThemeMode.OSCURO) { EscanerQrScreen(EscanerQrUiState(linterna = true, mostrarManual = true)) {} }
+    GreenTechTheme(modo = ThemeMode.OSCURO) { EscanerQrScreen(EscanerQrUiState(linterna = true, mostrarManual = true), onEvent = {}) }
 }

@@ -89,6 +89,8 @@ import com.greentech.app.ui.screens.employee.monitoreo.DetalleLoteLogic
 import com.greentech.app.ui.screens.employee.monitoreo.DetalleLoteScreen
 import com.greentech.app.ui.screens.employee.monitoreo.EscanerQrLogic
 import com.greentech.app.ui.screens.employee.monitoreo.EscanerQrScreen
+import com.greentech.app.platform.CameraScanner
+import com.greentech.app.platform.VistaCamara
 import com.greentech.app.ui.screens.employee.monitoreo.EtapaLogic
 import com.greentech.app.ui.screens.employee.monitoreo.EtapaScreen
 import com.greentech.app.ui.screens.employee.monitoreo.ObservacionLogic
@@ -100,6 +102,7 @@ import com.greentech.app.ui.screens.employee.salidas.RegistrarSalidaScreen
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.theme.Motion
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 // ---------------------------------------------------------------------------
@@ -206,7 +209,10 @@ private fun NavGraphBuilder.pantallasEmpleado(navegador: Navegador) {
         Conectar(koinViewModel<QrLoteLogic> { parametersOf(ruta.loteId, ruta.recienCreado) }, navegador) { s, on -> QrLoteScreen(s, on) }
     }
     composable<AppDestination.EscanerQr> {
-        Conectar(koinViewModel<EscanerQrLogic>(), navegador) { s, on -> EscanerQrScreen(s, on) }
+        val camara = koinInject<CameraScanner>()
+        Conectar(koinViewModel<EscanerQrLogic>(), navegador) { s, on ->
+            EscanerQrScreen(s, on, vistaCamara = { VistaCamara(camara, it) })
+        }
     }
     composable<AppDestination.CambiarEtapa> { entrada ->
         val ruta = entrada.toRoute<AppDestination.CambiarEtapa>()
