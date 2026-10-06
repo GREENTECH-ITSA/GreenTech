@@ -1,0 +1,9 @@
+<resources>
+    <!-- Ventana de arranque en claro (tema por defecto); Compose aplica después el tema elegido. -->
+    <style name="Theme.GreenTech" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/gt_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
