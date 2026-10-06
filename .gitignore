@@ -2,7 +2,6 @@
 .kotlin
 .gradle
 **/build/
-xcuserdata
 !src/**/build/
 local.properties
 .idea
@@ -10,9 +9,8 @@ local.properties
 captures
 .externalNativeBuild
 .cxx
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
-!*.xcworkspace/contents.xcworkspacedata
-**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Firma de release (no se versiona)
+keystore.properties
+*.jks
+*.keystore

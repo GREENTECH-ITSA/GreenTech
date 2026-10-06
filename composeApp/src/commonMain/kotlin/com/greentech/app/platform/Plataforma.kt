@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.key.KeyEvent
 
 /**
- * true si la plataforma puede desenfocar el fondo en tiempo real (Android 12+ e iOS).
+ * true si la plataforma puede desenfocar el fondo en tiempo real (Android 12+).
  * Si no, GlassSurface usa una superficie al 94 % sin desenfoque.
  */
 expect val desenfoqueDisponible: Boolean

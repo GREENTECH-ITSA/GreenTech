@@ -5,8 +5,8 @@ package com.greentech.shared.data.remote
  *
  * Pasos cuando se conecte el backend:
  * 1. Agregar a libs.versions.toml: io.github.jan-tennert.supabase (bom, auth-kt, postgrest-kt, realtime-kt, storage-kt)
- *    y un motor de Ktor por plataforma (ktor-client-okhttp en Android, ktor-client-darwin en iOS).
- * 2. Leer SUPABASE_URL y SUPABASE_ANON_KEY desde BuildConfig / xcconfig (nunca escribirlas en el código).
+ *    y el motor de Ktor para Android (ktor-client-okhttp).
+ * 2. Leer SUPABASE_URL y SUPABASE_ANON_KEY desde BuildConfig (nunca escribirlas en el código).
  * 3. Exponer el cliente con Koin en SharedModule cuando USE_FAKE_DATA = false.
  *
  * Ejemplo esperado:

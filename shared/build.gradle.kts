@@ -11,9 +11,6 @@ kotlin {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 
-    iosArm64()
-    iosSimulatorArm64()
-
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
         optIn.add("kotlin.time.ExperimentalTime")

@@ -1,6 +1,6 @@
 # GreenTech
 
-App de gestión de viveros para **Android e iOS** hecha con **Kotlin Multiplatform + Compose Multiplatform**.
+**GreenTech para Android**: app de gestión de viveros hecha con **Kotlin + Compose Multiplatform** (un solo target Android).
 Dos roles: **Empleado** (operación en campo) y **Administrador** (gestión y reportes).
 
 > Estado actual (**v1.0.0**): todas las interfaces son navegables y funcionan con datos en memoria.
@@ -36,9 +36,8 @@ Versión final para usuarios reales: sin elementos de prueba y con una experienc
 
 ```
 GreenTech/
-├── composeApp/   UI compartida (Compose Multiplatform): tema, componentes, pantallas, navegación
+├── composeApp/   App Android (Compose Multiplatform): tema, componentes, pantallas, navegación
 ├── shared/       Lógica y datos: modelos, repositorios, casos de uso, validaciones, Fakes, DI (Koin)
-├── iosApp/       Proyecto Xcode: solo arranca MainViewController
 └── supabase/     README (la base de datos ya existe en la nube)
 ```
 
@@ -54,12 +53,11 @@ La UI nunca llama a repositorios: **Logic → caso de uso → repositorio**.
 
 - Android Studio (Narwhal o más reciente) con el plugin **Kotlin Multiplatform**.
 - JDK 17 o superior (el de Android Studio sirve).
-- Para iOS: **Mac con Xcode 15+** (los targets de iOS no se compilan en Windows/Linux).
 
 Versiones (en `gradle/libs.versions.toml`): AGP 9.4.1, Kotlin 2.4.20, Compose Multiplatform 1.12.1,
 Material 3 **1.12.0-alpha03** (APIs Expressive), Navigation 2.9.2, Lifecycle 2.11.0, Koin 4.2.2, Coroutines 1.11.0,
 Serialization 1.11.0, kotlinx-datetime 0.8.0, qrose 1.3.0, **Haze 2.0.1** (`haze` + `haze-blur`),
-**multiplatform-settings-no-arg 1.3.0**. minSdk 26 · iOS 15+.
+**multiplatform-settings-no-arg 1.3.0**. minSdk 26.
 
 ## Cómo ejecutar
 
@@ -71,13 +69,6 @@ Serialization 1.11.0, kotlinx-datetime 0.8.0, qrose 1.3.0, **Haze 2.0.1** (`haze
    ./gradlew :composeApp:assembleDebug      # compila el APK
    ./gradlew :composeApp:installDebug       # lo instala en el dispositivo conectado
    ```
-
-### iOS (requiere Mac)
-1. Abre `iosApp/iosApp.xcodeproj` en Xcode.
-2. En `iosApp/Configuration/Config.xcconfig` escribe tu `TEAM_ID` (o elige tu equipo en *Signing & Capabilities*).
-3. Elige un simulador y pulsa **Run**. La fase "Compile Kotlin Framework" ejecuta
-   `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode` automáticamente.
-   También puedes usar la configuración de iOS desde Android Studio con el plugin de KMP.
 
 ## Solo para desarrollo
 
@@ -105,11 +96,9 @@ Ayuda → "Ver introducción" o borra los datos de la app.
 - `drawable/logo_icon.png` → emblema con fondo blanco; solo se usa dentro del QR.
 - `drawable/logo.jpg` → logo completo original. Ya no se usa en la app (tiene fondo blanco y "Tech" gris oscuro, no sirve en tema oscuro).
 - Ícono Android: adaptive icon en `composeApp/src/androidMain/res/mipmap-*` (fondo `#FFFFFF`).
-- Ícono iOS: `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png`.
 
 Los íconos se generaron recortando el emblema circular de `logo.jpg`. Si cambias el logo, reemplaza los dos archivos de
-`drawable/` y vuelve a generar los íconos (en Android Studio: *New → Image Asset* con `logo_icon.png`, fondo blanco;
-en Xcode arrastra un PNG 1024×1024 sin transparencia a `AppIcon`).
+`drawable/` y vuelve a generar los íconos (en Android Studio: *New → Image Asset* con `logo_icon.png`, fondo blanco).
 
 ## Conectar Supabase (cuando toque)
 
@@ -243,11 +232,11 @@ BentoGrid(contentPadding = PaddingValues(20.dp)) {
 | Supabase | `shared/.../data/remote/source/`, `dto/`, `data/mapper/` | Consultas, DTOs y mapeos reales |
 | Supabase | `shared/.../data/repository/RepositoriosSupabase.kt` | Implementar los 6 repositorios reales |
 | Supabase | `shared/.../di/SharedModule.kt` | Registrar las implementaciones y poner `USE_FAKE_DATA = false` |
-| Offline | `shared/.../data/local/` (+ `androidMain`/`iosMain`) | SQLDelight: base local, DAOs y drivers |
+| Offline | `shared/.../data/local/` (+ `androidMain`) | SQLDelight: base local, DAOs y drivers |
 | Offline | `shared/.../data/sync/SyncManager.kt` | Sincronización y estado real para el `OfflineBanner` |
 | Cámara | `composeApp/.../platform/CameraScanner.android.kt` / `.ios.kt` | CameraX + ML Kit / AVCaptureSession y linterna |
 | QR | `composeApp/.../platform/QrSaver.android.kt` / `.ios.kt` | Guardar imagen en galería y compartir (hoy devuelven éxito sin guardar: el aviso "Imagen del QR guardada" aún no es real) |
 | Fotos | `composeApp/.../employee/monitoreo/ObservacionLogic.kt` | Tomar foto real y subirla a Storage |
-| Push | — | Notificaciones push (FCM / APNs) y Edge Functions (alta/baja de usuarios de Auth) |
+| Push | — | Notificaciones push (FCM) y Edge Functions (alta/baja de usuarios de Auth) |
 | Material 3 | `gradle/libs.versions.toml` | Volver a una versión estable de `compose-material3` cuando publiquen las APIs Expressive (hoy 1.12.0-alpha03) |
 | Gradle | `gradle.properties` | AGP 9 pide separar la app Android en un módulo `androidApp`; hoy se usan `android.builtInKotlin=false` y `android.newDsl=false` para conservar la estructura pedida |
