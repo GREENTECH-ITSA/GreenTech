@@ -5,20 +5,19 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import com.greentech.app.ui.components.AlReseleccionarPestana
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.AccionGrande
+import com.greentech.app.ui.components.AlReseleccionarPestana
 import com.greentech.app.ui.components.BentoGrid
 import com.greentech.app.ui.components.BentoSize
 import com.greentech.app.ui.components.GtPanelTopBar
@@ -31,7 +30,9 @@ import com.greentech.app.ui.screens.admin.reportes.DashboardEvent
 import com.greentech.app.ui.screens.admin.reportes.DashboardUiState
 import com.greentech.app.ui.screens.admin.reportes.dashboardBento
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.shared.util.Fechas
 
@@ -51,21 +52,21 @@ fun AdminHomeScreen(
             modifier = Modifier.fillMaxSize(),
             estado = cuadricula,
             contentPadding = PaddingValues(
-                start = 20.dp, end = 20.dp,
-                top = padding.calculateTopPadding() + 4.dp,
-                bottom = padding.calculateBottomPadding() + 16.dp,
+                start = Dimens.margenLateral, end = Dimens.margenLateral,
+                top = padding.calculateTopPadding() + Dimens.xs,
+                bottom = padding.calculateBottomPadding() + Dimens.lg,
             ),
         ) {
             anchoCompleto("saludo") {
-                Column(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+                Column(Modifier.fillMaxWidth().padding(bottom = Dimens.xs)) {
                     Text(
                         "${Textos.Inicio.HOLA}, ${estado.nombre}",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = GtTexto.tituloPantalla,
                         modifier = Modifier.semantics { heading() },
                     )
                     Text(
                         estado.fecha.replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = GtTexto.ayuda,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -78,8 +79,8 @@ fun AdminHomeScreen(
             anchoCompleto("tituloAccesos") {
                 Text(
                     Textos.Dashboard.ACCESOS,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 8.dp).semantics { heading() },
+                    style = GtTexto.tituloTarjeta,
+                    modifier = Modifier.padding(top = Dimens.sm).semantics { heading() },
                 )
             }
             bento(BentoSize.S, "agregar") {

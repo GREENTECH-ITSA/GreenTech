@@ -1,6 +1,7 @@
 package com.greentech.app.ui.components.charts
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +32,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.formatearNumero
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.tabular
 import kotlin.math.PI
@@ -85,19 +88,22 @@ fun Gauge(
     tamano: Dp = 176.dp,
     decimales: Int = 1,
     titulo: String = "",
+    colorSerie: Color = MaterialTheme.colorScheme.primary,
 ) {
     val compacto = tamano < 100.dp
     val mediano = tamano < 150.dp
     val estado = estadoRango(valor, idealMin, idealMax)
     val estilo = estado.estilo(esDesvioSevero(valor, idealMin, idealMax))
     val colorValor = if (estado == EstadoRango.EN_RANGO) MaterialTheme.colorScheme.onSurface else estilo.color
-    val colorPunto = if (estado == EstadoRango.EN_RANGO) MaterialTheme.colorScheme.primary else estilo.color
+    val colorPunto = if (estado == EstadoRango.EN_RANGO) colorSerie else estilo.color
     val pista = MaterialTheme.colorScheme.surfaceContainerHighest
     val banda = MaterialTheme.colorScheme.primaryContainer
     val anillo = MaterialTheme.colorScheme.surfaceContainerLow
     val objetivo = ((valor - escalaMin) / (escalaMax - escalaMin)).coerceIn(0.0, 1.0).toFloat()
     val progreso = remember { Animatable(if (Motion.reducir) objetivo else 0f) }
-    LaunchedEffect(objetivo) { progreso.animateTo(objetivo, Motion.tween(Motion.CONTADOR)) }
+    LaunchedEffect(objetivo) {
+        progreso.animateTo(objetivo, tween(Motion.ms(Motion.ENTRADA_GRAFICA), easing = Grafica.easingEntrada))
+    }
     val textoValor = formatearNumero(valor, decimales)
     val rango = "${formatearNumero(idealMin, 0)}–${formatearNumero(idealMax, 0)} $unidad"
 
@@ -126,9 +132,9 @@ fun Gauge(
             drawCircle(colorPunto, radius = grosor * 0.6f, center = punto)
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
                 if (estado != EstadoRango.EN_RANGO) {
-                    Icon(estilo.icono, null, tint = estilo.color, modifier = Modifier.size(if (compacto) 16.dp else 24.dp))
+                    Icon(estilo.icono, null, tint = estilo.color, modifier = Modifier.size(if (compacto) Dimens.iconoMini else Dimens.icono))
                 }
                 Text(
                     textoValor,
@@ -141,7 +147,7 @@ fun Gauge(
                     maxLines = 1,
                 )
             }
-            Text(unidad, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(unidad, style = GtTexto.etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

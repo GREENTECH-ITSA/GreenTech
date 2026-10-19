@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,12 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.Motion
 
 /**
@@ -75,7 +76,7 @@ fun GtTopBar(
             },
             navigationIcon = {
                 if (onVolver != null) {
-                    IconButton(onClick = onVolver, modifier = Modifier.size(56.dp)) {
+                    IconButton(onClick = onVolver, modifier = Modifier.size(Dimens.tactilMin)) {
                         Icon(
                             if (cerrar) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = if (cerrar) Textos.Comun.CERRAR else Textos.Comun.VOLVER,
@@ -131,11 +132,11 @@ private fun BarraConVidrio(modifier: Modifier, barra: @Composable () -> Unit) {
 
 @Composable
 private fun BotonAyuda(onAyuda: () -> Unit) {
-    IconButton(onClick = onAyuda, modifier = Modifier.size(56.dp)) {
+    IconButton(onClick = onAyuda, modifier = Modifier.size(Dimens.tactilMin)) {
         Icon(
             Icons.AutoMirrored.Outlined.HelpOutline,
             contentDescription = Textos.Comun.AYUDA,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(Dimens.iconoMediano),
         )
     }
 }

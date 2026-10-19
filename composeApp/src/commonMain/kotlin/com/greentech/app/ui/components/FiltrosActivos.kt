@@ -18,13 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
+import com.greentech.app.ui.theme.GtTexto
 
 /**
  * Línea de estado de una lista: "12 lotes · 2 filtros activos" y, si hay filtros, el botón
- * "Limpiar filtros". El conteo se anuncia al lector de pantalla cuando cambia.
+ * "Limpiar filtros"; [accion] agrega un ícono al final (por ejemplo, la leyenda de salud). El conteo se anuncia al lector de pantalla cuando cambia.
  */
 @Composable
 fun FiltrosActivos(
@@ -32,22 +33,24 @@ fun FiltrosActivos(
     filtrosActivos: Int,
     onLimpiar: () -> Unit,
     modifier: Modifier = Modifier,
+    accion: (@Composable () -> Unit)? = null,
 ) {
-    Row(modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier.fillMaxWidth().heightIn(min = Dimens.tactilMin), verticalAlignment = Alignment.CenterVertically) {
         val texto = if (filtrosActivos > 0) "$resultados · ${textoFiltrosActivos(filtrosActivos)}" else resultados
         Text(
             texto,
-            style = MaterialTheme.typography.labelLarge,
+            style = GtTexto.etiqueta,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
         )
         if (filtrosActivos > 0) {
-            TextButton(onClick = onLimpiar, modifier = Modifier.heightIn(min = 56.dp)) {
-                Icon(Icons.Outlined.FilterAltOff, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(Textos.Comun.LIMPIAR_FILTROS, style = MaterialTheme.typography.labelLarge)
+            TextButton(onClick = onLimpiar, modifier = Modifier.heightIn(min = Dimens.tactilMin)) {
+                Icon(Icons.Outlined.FilterAltOff, contentDescription = null, modifier = Modifier.size(Dimens.iconoChico))
+                Spacer(Modifier.width(Dimens.sm))
+                Text(Textos.Comun.LIMPIAR_FILTROS, style = GtTexto.boton)
             }
         }
+        accion?.invoke()
     }
 }
 

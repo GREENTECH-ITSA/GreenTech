@@ -21,7 +21,9 @@ import com.greentech.app.ui.components.charts.esDesvioSevero
 import com.greentech.app.ui.components.charts.estadoRango
 import com.greentech.app.ui.components.charts.estilo
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 
 /**
  * Tarjeta de sensor: título con ícono, gauge grande y estado (ícono + texto) con el rango ideal.
@@ -42,22 +44,22 @@ fun SensorGauge(
     val estilo = estadoRango(valor, idealMin, idealMax).estilo(esDesvioSevero(valor, idealMin, idealMax))
     Surface(modifier, shape = GtShapes.mosaico, color = MaterialTheme.colorScheme.surfaceContainerLow) {
         Column(
-            Modifier.fillMaxWidth().padding(16.dp),
+            Modifier.fillMaxWidth().padding(Dimens.lg),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.sm),
         ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(titulo, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                Icon(icono, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                Text(titulo, style = GtTexto.etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                Icon(icono, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(Dimens.iconoMediano))
             }
             Gauge(valor, unidad, escalaMin, escalaMax, idealMin, idealMax, tamano = tamano, titulo = titulo)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(estilo.icono, null, tint = estilo.color, modifier = Modifier.size(20.dp))
-                Text(estilo.texto, style = MaterialTheme.typography.labelLarge, color = estilo.color)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                Icon(estilo.icono, null, tint = estilo.color, modifier = Modifier.size(Dimens.iconoChico))
+                Text(estilo.texto, style = GtTexto.etiqueta, color = estilo.color)
             }
             Text(
                 "${Textos.Condiciones.IDEAL}: ${formatearNumero(idealMin)}–${formatearNumero(idealMax)} $unidad",
-                style = MaterialTheme.typography.bodySmall,
+                style = GtTexto.ayuda,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

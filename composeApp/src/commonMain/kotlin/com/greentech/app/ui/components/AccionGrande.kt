@@ -29,7 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ParColores
 
 /**
@@ -57,23 +59,23 @@ fun AccionGrande(
         contentColor = colorContenido,
         interactionSource = interaccion,
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(icono, null, tint = colorIcono, modifier = Modifier.size(28.dp))
+        Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
+            Icon(icono, null, tint = colorIcono, modifier = Modifier.size(Dimens.iconoMediano))
             Spacer(Modifier.weight(1f, fill = false))
             // Palabras largas como "Recomendaciones" se reducen un poco en lugar de partirse.
             BasicText(
                 titulo,
-                style = MaterialTheme.typography.titleMedium.copy(color = colorContenido),
+                style = GtTexto.tituloTarjeta.copy(color = colorContenido),
                 maxLines = 1,
                 autoSize = TextAutoSize.StepBased(
-                    minFontSize = MaterialTheme.typography.labelMedium.fontSize,
-                    maxFontSize = MaterialTheme.typography.titleMedium.fontSize,
+                    minFontSize = GtTexto.etiqueta.fontSize,
+                    maxFontSize = GtTexto.tituloTarjeta.fontSize,
                 ),
             )
             if (descripcion != null) {
                 Text(
                     descripcion,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = GtTexto.ayuda,
                     color = if (relleno) colorContenido else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -102,9 +104,9 @@ fun TarjetaOpcion(
         color = if (seleccionada) colores.fondo else MaterialTheme.colorScheme.surfaceContainerLow,
         border = if (seleccionada) BorderStroke(2.dp, colores.contenido) else null,
     ) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.fillMaxWidth().padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icono, null, tint = colores.contenido, modifier = Modifier.size(28.dp))
+                Icon(icono, null, tint = colores.contenido, modifier = Modifier.size(Dimens.iconoMediano))
                 Spacer(Modifier.weight(1f))
                 Icon(
                     if (seleccionada) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
@@ -112,8 +114,8 @@ fun TarjetaOpcion(
                     tint = if (seleccionada) colores.contenido else MaterialTheme.colorScheme.outline,
                 )
             }
-            Text(titulo, style = MaterialTheme.typography.titleLarge, color = if (seleccionada) colores.contenido else MaterialTheme.colorScheme.onSurface)
-            Text(descripcion, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(titulo, style = GtTexto.tituloTarjeta, color = if (seleccionada) colores.contenido else MaterialTheme.colorScheme.onSurface)
+            Text(descripcion, style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

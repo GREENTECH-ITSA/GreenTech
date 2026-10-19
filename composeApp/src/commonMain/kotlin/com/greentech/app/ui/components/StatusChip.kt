@@ -6,21 +6,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.ReportProblem
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.GtShapes
 import com.greentech.app.ui.theme.ParColores
 import com.greentech.shared.domain.model.EstadoSalud
@@ -39,12 +35,12 @@ fun StatusChip(
         modifier = modifier
             .clip(GtShapes.pastilla)
             .background(colores.fondo)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = Dimens.md, vertical = Dimens.xs),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.xs),
     ) {
-        if (icono != null) Icon(icono, contentDescription = null, tint = colores.contenido, modifier = Modifier.size(20.dp))
-        Text(texto, style = MaterialTheme.typography.labelMedium, color = colores.contenido)
+        if (icono != null) Icon(icono, contentDescription = null, tint = colores.contenido, modifier = Modifier.size(Dimens.iconoChico))
+        Text(texto, style = GtTexto.etiqueta, color = colores.contenido)
     }
 }
 
@@ -52,9 +48,9 @@ fun StatusChip(
 fun EtapaChip(etapa: Etapa, modifier: Modifier = Modifier) =
     StatusChip(etapa.etiqueta, etapa.colores(), modifier, IconosDominio.etapa(etapa))
 
+/** Atajo de [PlantHealthIndicator] en su variante chip. */
 @Composable
-fun SaludChip(estado: EstadoSalud, modifier: Modifier = Modifier) =
-    StatusChip(estado.etiqueta, estado.colores(), modifier, estado.icono())
+fun SaludChip(estado: EstadoSalud, modifier: Modifier = Modifier) = PlantHealthIndicator(estado, modifier, VarianteSalud.CHIP)
 
 @Composable
 fun SeveridadChip(severidad: Severidad, modifier: Modifier = Modifier) =
@@ -71,23 +67,8 @@ fun Etapa.colores(): ParColores = when (this) {
 }
 
 @Composable
-fun EstadoSalud.colores(): ParColores = when (this) {
-    EstadoSalud.SANA -> GreenTechTheme.colors.exito
-    EstadoSalud.EN_OBSERVACION -> GreenTechTheme.colors.advertencia
-    EstadoSalud.AFECTADA -> GreenTechTheme.colors.peligro
-    EstadoSalud.CRITICA -> GreenTechTheme.colors.error
-}
-
-@Composable
 fun Severidad.colores(): ParColores = when (this) {
     Severidad.BAJA -> GreenTechTheme.colors.advertencia
     Severidad.MEDIA -> GreenTechTheme.colors.peligro
     Severidad.ALTA -> GreenTechTheme.colors.error
-}
-
-fun EstadoSalud.icono(): ImageVector = when (this) {
-    EstadoSalud.SANA -> Icons.Outlined.CheckCircle
-    EstadoSalud.EN_OBSERVACION -> Icons.Outlined.Visibility
-    EstadoSalud.AFECTADA -> Icons.Outlined.WarningAmber
-    EstadoSalud.CRITICA -> Icons.Outlined.ReportProblem
 }

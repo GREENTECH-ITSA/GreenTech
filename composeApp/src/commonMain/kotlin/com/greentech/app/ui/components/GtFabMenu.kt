@@ -6,7 +6,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.FloatingActionButtonMenu
 import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
@@ -21,6 +20,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.GtTexto
 
 /** Acción del menú del FAB (ícono + texto). */
 data class AccionFab(val texto: String, val icono: ImageVector, val onClick: () -> Unit)
@@ -58,7 +58,7 @@ fun GtFabMenu(acciones: List<AccionFab>, modifier: Modifier = Modifier) {
                     abierto = false
                     accion.onClick()
                 },
-                text = { Text(accion.texto, style = MaterialTheme.typography.labelLarge) },
+                text = { Text(accion.texto, style = GtTexto.boton) },
                 icon = { Icon(accion.icono, contentDescription = null) },
             )
         }

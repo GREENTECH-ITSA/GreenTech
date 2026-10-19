@@ -26,10 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import com.greentech.app.ui.components.InfoAyuda
-import com.greentech.app.ui.components.contexto
-import com.greentech.app.ui.components.obligatorio
-import com.greentech.app.ui.strings.conValores
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,22 +35,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.components.BotonLeyendaSalud
 import com.greentech.app.ui.components.FormularioScaffold
 import com.greentech.app.ui.components.GtChipGroup
 import com.greentech.app.ui.components.GtTextField
 import com.greentech.app.ui.components.IconosDominio
 import com.greentech.app.ui.components.IconosModulo
+import com.greentech.app.ui.components.InfoAyuda
 import com.greentech.app.ui.components.LoteResumenEstado
 import com.greentech.app.ui.components.SeccionFormulario
 import com.greentech.app.ui.components.StatusChip
 import com.greentech.app.ui.components.colores
+import com.greentech.app.ui.components.contexto
 import com.greentech.app.ui.components.efectoPresion
 import com.greentech.app.ui.components.icono
+import com.greentech.app.ui.components.obligatorio
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.shared.domain.model.EstadoSalud
@@ -84,7 +87,7 @@ fun EtapaScreen(estado: EtapaUiState, onEvent: (EtapaEvent) -> Unit) {
             estado.etapaActual?.let {
                 Text(
                     Textos.Etapa.ETAPA_ACTUAL.conValores(it.etiqueta),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = GtTexto.ayuda,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -101,7 +104,7 @@ fun EtapaScreen(estado: EtapaUiState, onEvent: (EtapaEvent) -> Unit) {
                 }
             }
         }
-        SeccionFormulario(Textos.Etapa.SALUD) {
+        SeccionFormulario(Textos.Etapa.SALUD, accionTitulo = { BotonLeyendaSalud() }) {
             GtChipGroup(
                 opciones = EstadoSalud.entries,
                 seleccionado = estado.salud,
@@ -134,9 +137,9 @@ private fun PasoEtapa(etapa: Etapa, actual: Boolean, alcanzada: Boolean, selecci
     )
     val interaccion = remember { MutableInteractionSource() }
     Row(Modifier.height(IntrinsicSize.Min)) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(44.dp)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(Dimens.circuloIcono)) {
             Box(
-                Modifier.padding(top = 10.dp).size(44.dp).clip(GtShapes.circulo)
+                Modifier.padding(top = Dimens.sm).size(Dimens.circuloIcono).clip(GtShapes.circulo)
                     .background(if (alcanzada) esquema.primary else esquema.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
@@ -146,32 +149,32 @@ private fun PasoEtapa(etapa: Etapa, actual: Boolean, alcanzada: Boolean, selecci
                 )
             }
             if (!esUltima) {
-                Box(Modifier.width(2.dp).weight(1f).fillMaxHeight().background(if (alcanzada) esquema.primary else esquema.outlineVariant))
+                Box(Modifier.width(Dimens.lineaTiempo).weight(1f).fillMaxHeight().background(if (alcanzada) esquema.primary else esquema.outlineVariant))
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(Dimens.md))
         Surface(
-            modifier = Modifier.weight(1f).padding(vertical = 4.dp)
+            modifier = Modifier.weight(1f).padding(vertical = Dimens.xs)
                 .efectoPresion(interaccion)
                 .clip(GtShapes.campo)
                 .selectable(seleccionada, onClick = onClick, role = Role.RadioButton, interactionSource = interaccion, indication = ripple()),
             shape = GtShapes.campo,
             color = fondo,
-            border = BorderStroke(1.dp, if (seleccionada) Color.Transparent else esquema.outline),
+            border = BorderStroke(Dimens.borde, if (seleccionada) Color.Transparent else esquema.outline),
         ) {
             Row(
-                Modifier.heightIn(min = 64.dp).padding(horizontal = 16.dp),
+                Modifier.heightIn(min = Dimens.filaLista).padding(horizontal = Dimens.lg),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     etapa.etiqueta,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = GtTexto.tituloTarjeta,
                     color = if (seleccionada) esquema.onSecondaryContainer else esquema.onSurface,
                     modifier = Modifier.weight(1f),
                 )
                 if (actual) StatusChip(Textos.Etapa.ACTUAL, GreenTechTheme.colors.neutro)
                 if (seleccionada) {
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(Dimens.sm))
                     Icon(Icons.Outlined.CheckCircle, null, tint = esquema.onSecondaryContainer)
                 }
             }

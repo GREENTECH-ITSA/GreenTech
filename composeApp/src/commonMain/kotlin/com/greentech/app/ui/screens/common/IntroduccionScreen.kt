@@ -57,8 +57,10 @@ import com.greentech.app.ui.components.MarcaGreenTech
 import com.greentech.app.ui.components.RegistrarModal
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.shared.domain.model.Rol
@@ -104,34 +106,34 @@ private fun ContenidoIntro(rol: Rol, onTerminar: () -> Unit) {
     val alcance = rememberCoroutineScope()
     val ultima = pager.currentPage == paginas.lastIndex
     Column(
-        Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(horizontal = 20.dp, vertical = 12.dp),
+        Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(horizontal = Dimens.margenLateral, vertical = Dimens.md),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(Modifier.fillMaxWidth().widthIn(max = 640.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().widthIn(max = Dimens.anchoMaximo), verticalAlignment = Alignment.CenterVertically) {
             MarcaGreenTech(tamanoEmblema = 32.dp, tamanoTexto = 20.sp)
             Spacer(Modifier.weight(1f))
             if (!ultima) {
-                TextButton(onClick = onTerminar, modifier = Modifier.heightIn(min = 56.dp)) {
-                    Text(Textos.Intro.OMITIR, style = MaterialTheme.typography.labelLarge)
+                TextButton(onClick = onTerminar, modifier = Modifier.heightIn(min = Dimens.tactilMin)) {
+                    Text(Textos.Intro.OMITIR, style = GtTexto.boton)
                 }
             }
         }
         HorizontalPager(
             state = pager,
-            modifier = Modifier.weight(1f).fillMaxWidth().widthIn(max = 640.dp),
-            pageSpacing = 16.dp,
+            modifier = Modifier.weight(1f).fillMaxWidth().widthIn(max = Dimens.anchoMaximo),
+            pageSpacing = Dimens.lg,
         ) { i ->
             TarjetaIntro(paginas[i], numero = i + 1, total = paginas.size)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Dimens.lg))
         IndicadorPasos(pager.currentPage, paginas.size)
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Dimens.lg))
         GtButton(
             texto = if (ultima) Textos.Intro.EMPEZAR else Textos.Intro.SIGUIENTE,
             onClick = {
                 if (ultima) onTerminar() else alcance.launch { pager.animateScrollToPage(pager.currentPage + 1, animationSpec = Motion.lenta()) }
             },
-            modifier = Modifier.fillMaxWidth().widthIn(max = 640.dp),
+            modifier = Modifier.fillMaxWidth().widthIn(max = Dimens.anchoMaximo),
             icono = if (ultima) Icons.Outlined.Check else Icons.AutoMirrored.Outlined.ArrowForward,
         )
     }
@@ -141,7 +143,7 @@ private fun ContenidoIntro(rol: Rol, onTerminar: () -> Unit) {
 @Composable
 private fun TarjetaIntro(pagina: PaginaIntro, numero: Int, total: Int) {
     val sobre = MaterialTheme.colorScheme.onPrimaryContainer
-    Box(Modifier.fillMaxSize().padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxSize().padding(vertical = Dimens.md), contentAlignment = Alignment.Center) {
         BentoTile(
             BentoSize.L,
             modifier = Modifier.fillMaxWidth(),
@@ -155,14 +157,14 @@ private fun TarjetaIntro(pagina: PaginaIntro, numero: Int, total: Int) {
                 )
             },
         ) {
-            Column(Modifier.verticalScroll(rememberScrollState()).padding(8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()).padding(Dimens.sm), verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
                 Box(
                     Modifier.size(88.dp).clip(GtShapes.circulo).background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center,
                 ) { Icon(pagina.icono, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(44.dp)) }
-                Text(Textos.Intro.PASO.conValores(numero, total), style = MaterialTheme.typography.labelLarge, color = sobre)
-                Text(pagina.titulo, style = MaterialTheme.typography.headlineMedium, color = sobre, modifier = Modifier.semantics { heading() })
-                Text(pagina.texto, style = MaterialTheme.typography.bodyLarge, color = sobre)
+                Text(Textos.Intro.PASO.conValores(numero, total), style = GtTexto.boton, color = sobre)
+                Text(pagina.titulo, style = GtTexto.tituloPantalla, color = sobre, modifier = Modifier.semantics { heading() })
+                Text(pagina.texto, style = GtTexto.cuerpo, color = sobre)
             }
         }
     }
@@ -173,7 +175,7 @@ private fun TarjetaIntro(pagina: PaginaIntro, numero: Int, total: Int) {
 private fun IndicadorPasos(actual: Int, total: Int) {
     Row(
         Modifier.semantics(mergeDescendants = true) { contentDescription = Textos.Intro.PASO.conValores(actual + 1, total) },
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
     ) {
         repeat(total) { i ->
             val ancho by animateDpAsState(if (i == actual) 28.dp else 8.dp, Motion.resorte(), label = "paso")

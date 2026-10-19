@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,74 +27,74 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.FlashlightOff
 import androidx.compose.material.icons.outlined.FlashlightOn
 import androidx.compose.material.icons.outlined.Keyboard
-import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.material.icons.outlined.NoPhotography
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ZoomIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.greentech.app.ui.components.GlassSurface
-import com.greentech.app.ui.components.CheckAnimado
-import com.greentech.app.ui.components.ConfirmSheet
-import com.greentech.app.ui.components.formatearNumero
 import com.greentech.app.platform.EstadoPermiso
 import com.greentech.app.platform.Permiso
 import com.greentech.app.platform.rememberEstadoPermiso
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.layout.offset
-import androidx.compose.material.icons.outlined.NoPhotography
-import androidx.compose.material.icons.outlined.PhotoCamera
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.ZoomIn
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.contentDescription
-import kotlin.math.abs
-import kotlin.math.roundToInt
+import com.greentech.app.ui.components.CheckAnimado
+import com.greentech.app.ui.components.ConfirmSheet
+import com.greentech.app.ui.components.GlassSurface
 import com.greentech.app.ui.components.GtBottomSheet
 import com.greentech.app.ui.components.GtButton
 import com.greentech.app.ui.components.GtButtonVariant
 import com.greentech.app.ui.components.GtScaffold
 import com.greentech.app.ui.components.GtTextField
-import com.greentech.app.ui.components.rememberEnfoqueInicial
-import androidx.compose.ui.focus.focusRequester
 import com.greentech.app.ui.components.GtTopBar
 import com.greentech.app.ui.components.IconosModulo
 import com.greentech.app.ui.components.efectoPresion
+import com.greentech.app.ui.components.formatearNumero
 import com.greentech.app.ui.components.fuenteVidrio
+import com.greentech.app.ui.components.rememberEnfoqueInicial
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.theme.BarrasSistema
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ThemeMode
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.rememberHazeState
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Escanear QR: vista oscura en ambos temas (como una cámara), marco con esquinas redondeadas que
@@ -128,8 +130,8 @@ fun EscanerQrScreen(
                     .background(GreenTechTheme.colors.camara)
                     .verticalScroll(rememberScrollState())
                     .padding(padding)
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+                    .padding(horizontal = Dimens.margenLateral, vertical = Dimens.lg),
+                verticalArrangement = Arrangement.spacedBy(Dimens.lgx),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val vista = rememberHazeState()
@@ -140,13 +142,13 @@ fun EscanerQrScreen(
                         Visor(Modifier.fillMaxSize().fuenteVidrio(vista), camaraActiva, estado.detectado, vistaCamara)
                     }
                     if (camaraActiva) {
-                        BotonesFlotantes(estado, onEvent, vista, Modifier.align(Alignment.BottomCenter).padding(12.dp))
+                        BotonesFlotantes(estado, onEvent, vista, Modifier.align(Alignment.BottomCenter).padding(Dimens.md))
                     }
                 }
                 if (!estado.camaraReal || camaraActiva) {
                     Text(
                         if (estado.camaraReal) Textos.Escaner.INSTRUCCION else Textos.Escaner.SIN_CAMARA,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = GtTexto.tituloTarjeta,
                         color = GreenTechTheme.colors.sobreCamara,
                         textAlign = TextAlign.Center,
                     )
@@ -183,25 +185,25 @@ fun EscanerQrScreen(
 @Composable
 private fun SinAccesoCamara(permiso: EstadoPermiso, modifier: Modifier) {
     Column(
-        modifier.clip(GtShapes.mosaico).background(MaterialTheme.colorScheme.surfaceContainerLowest).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        modifier.clip(GtShapes.mosaico).background(MaterialTheme.colorScheme.surfaceContainerLowest).padding(Dimens.xl),
+        verticalArrangement = Arrangement.spacedBy(Dimens.md, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(Icons.Outlined.NoPhotography, null, tint = GreenTechTheme.colors.sobreCamara, modifier = Modifier.size(48.dp))
         Text(
             Textos.Permisos.SIN_CAMARA_TITULO,
-            style = MaterialTheme.typography.titleLarge,
+            style = GtTexto.tituloTarjeta,
             color = GreenTechTheme.colors.sobreCamara,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
         Text(
             if (permiso.negadoPermanente) Textos.Permisos.SIN_CAMARA_AJUSTES else Textos.Permisos.SIN_CAMARA_MENSAJE,
-            style = MaterialTheme.typography.bodyLarge,
+            style = GtTexto.cuerpo,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.size(4.dp))
+        Spacer(Modifier.size(Dimens.xs))
         if (permiso.negadoPermanente) {
             GtButton(Textos.Permisos.ABRIR_AJUSTES, permiso::abrirAjustes, icono = Icons.Outlined.Settings)
         } else {
@@ -240,7 +242,7 @@ private fun Visor(
         } else {
             Icon(IconosModulo.qr, null, tint = marco.copy(alpha = 0.08f), modifier = Modifier.size(140.dp))
         }
-        Canvas(Modifier.fillMaxSize().padding(36.dp)) {
+        Canvas(Modifier.fillMaxSize().padding(Dimens.esquinaVisor)) {
             val lado = size.minDimension * 0.86f * respiracion
             val ox = (size.width - lado) / 2
             val oy = (size.height - lado) / 2 - 24.dp.toPx()
@@ -279,7 +281,7 @@ private fun Visor(
  */
 @Composable
 private fun BotonesFlotantes(estado: EscanerQrUiState, onEvent: (EscanerQrEvent) -> Unit, vista: HazeState, modifier: Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(Dimens.md)) {
         if (estado.linternaDisponible) BotonVidrio(
             icono = if (estado.linterna) Icons.Outlined.FlashlightOn else Icons.Outlined.FlashlightOff,
             texto = if (estado.linterna) Textos.Escaner.LINTERNA_OFF else Textos.Escaner.LINTERNA_ON,
@@ -314,24 +316,24 @@ private fun BotonVidrio(
     // El gesto va en el contenido (dentro del vidrio): el efecto de desenfoque intercepta los toques
     // que lleguen al contenedor.
     GlassSurface(
-        modifier = Modifier.heightIn(min = 56.dp).efectoPresion(interaccion),
+        modifier = Modifier.heightIn(min = Dimens.tactilMin).efectoPresion(interaccion),
         shape = GtShapes.pastilla,
         fuente = vista,
         bordeColor = if (activo) MaterialTheme.colorScheme.primary else null,
     ) {
         Row(
             Modifier
-                .heightIn(min = 56.dp)
+                .heightIn(min = Dimens.tactilMin)
                 .clip(GtShapes.pastilla)
                 .toggleable(activo, onValueChange = { onClick() }, role = if (soloIcono) Role.Switch else Role.Button, interactionSource = interaccion, indication = ripple())
                 .then(if (descripcion != null) Modifier.semantics(mergeDescendants = true) { contentDescription = "$descripcion, $texto" } else Modifier)
-                .padding(horizontal = if (soloIcono) 16.dp else 20.dp),
+                .padding(horizontal = if (soloIcono) Dimens.lg else Dimens.lgx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(icono, contentDescription = if (soloIcono) texto else null, tint = if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
             if (!soloIcono) {
-                Spacer(Modifier.width(8.dp))
-                Text(texto, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
+                Spacer(Modifier.width(Dimens.sm))
+                Text(texto, style = GtTexto.boton, color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
             }
         }
     }
@@ -341,10 +343,10 @@ private fun BotonVidrio(
 private fun HojaCodigoManual(estado: EscanerQrUiState, onEvent: (EscanerQrEvent) -> Unit) {
     GtBottomSheet(onCerrar = { onEvent(EscanerQrEvent.CerrarManual) }) {
         Column(
-            Modifier.padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.padding(start = Dimens.margenLateral, end = Dimens.margenLateral, bottom = Dimens.xl),
+            verticalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
-            Text(Textos.Escaner.MANUAL_TITULO, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            Text(Textos.Escaner.MANUAL_TITULO, style = GtTexto.tituloTarjeta, modifier = Modifier.semantics { heading() })
             GtTextField(
                 valor = estado.codigo,
                 onValorChange = { onEvent(EscanerQrEvent.CodigoCambio(it)) },

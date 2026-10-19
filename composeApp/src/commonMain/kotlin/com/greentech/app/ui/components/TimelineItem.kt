@@ -25,10 +25,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
-import com.greentech.app.util.FechasUi
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ParColores
+import com.greentech.app.util.FechasUi
 import com.greentech.shared.domain.model.EventoBitacora
 import com.greentech.shared.domain.model.TipoEvento
 import com.greentech.shared.util.Fechas
@@ -61,35 +63,35 @@ fun TimelineItem(
     val colores = evento.tipo.colores()
     val linea = MaterialTheme.colorScheme.outlineVariant
     Row(modifier.fillMaxWidth().height(IntrinsicSize.Min).semantics(mergeDescendants = true) {}) {
-        Column(Modifier.width(40.dp).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(Modifier.width(2.dp).height(12.dp).background(if (esPrimero) androidx.compose.ui.graphics.Color.Transparent else linea))
+        Column(Modifier.width(Dimens.columnaLineaTiempo).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(Modifier.width(Dimens.lineaTiempo).height(Dimens.md).background(if (esPrimero) androidx.compose.ui.graphics.Color.Transparent else linea))
             Box(
-                Modifier.size(36.dp).clip(GtShapes.circulo).background(colores.fondo),
+                Modifier.size(Dimens.nodoLineaTiempo).clip(GtShapes.circulo).background(colores.fondo),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(IconosDominio.evento(evento.tipo), contentDescription = evento.tipo.etiqueta, tint = colores.contenido, modifier = Modifier.size(20.dp))
+                Icon(IconosDominio.evento(evento.tipo), contentDescription = evento.tipo.etiqueta, tint = colores.contenido, modifier = Modifier.size(Dimens.iconoChico))
             }
-            if (!esUltimo) Box(Modifier.width(2.dp).weight(1f).background(linea))
+            if (!esUltimo) Box(Modifier.width(Dimens.lineaTiempo).weight(1f).background(linea))
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(Dimens.md))
         Surface(
-            modifier = Modifier.weight(1f).padding(bottom = if (esUltimo) 0.dp else 12.dp),
+            modifier = Modifier.weight(1f).padding(bottom = if (esUltimo) Dimens.none else Dimens.md),
             shape = GtShapes.campo,
             color = MaterialTheme.colorScheme.surfaceContainerLow,
         ) {
-            Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(evento.titulo, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Column(Modifier.padding(horizontal = Dimens.md, vertical = Dimens.md), verticalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
+                Text(evento.titulo, style = GtTexto.tituloTarjeta, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (mostrarLote) {
-                    Text("${evento.especie} · ${evento.loteCodigo}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("${evento.especie} · ${evento.loteCodigo}", style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (evento.descripcion.isNotBlank()) {
-                    Text(evento.descripcion, style = MaterialTheme.typography.bodyMedium)
+                    Text(evento.descripcion, style = GtTexto.ayuda)
                 }
                 Text(
                     "${Textos.Bitacora.POR} ${evento.autor} · " + if (soloHora) Fechas.hora(evento.fecha) else FechasUi.relativa(evento.fecha),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = GtTexto.ayuda,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp),
+                    modifier = Modifier.padding(top = Dimens.xxs),
                 )
             }
         }

@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 
 /** Estado de sincronización mostrado en el banner (por ahora simulado). */
@@ -86,12 +87,12 @@ fun OfflineBanner(estado: EstadoSincronizacion, onSincronizar: () -> Unit, modif
                         estado.pendientes > 0 -> "${estado.pendientes} ${Textos.Sync.PENDIENTES}"
                         else -> Textos.Sync.SINCRONIZADO
                     },
-                    style = MaterialTheme.typography.titleSmall,
+                    style = GtTexto.tituloTarjeta,
                     color = colores.contenido,
                 )
                 Text(
                     "${Textos.Sync.ULTIMA}: ${estado.ultimaHora}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = GtTexto.ayuda,
                     color = colores.contenido,
                 )
             }
@@ -99,7 +100,7 @@ fun OfflineBanner(estado: EstadoSincronizacion, onSincronizar: () -> Unit, modif
                 onClick = onSincronizar,
                 enabled = !estado.sincronizando,
                 modifier = Modifier.heightIn(min = Dimens.tactilMin),
-            ) { Text(Textos.Sync.SINCRONIZAR, style = MaterialTheme.typography.labelLarge, color = colores.contenido) }
+            ) { Text(Textos.Sync.SINCRONIZAR, style = GtTexto.boton, color = colores.contenido) }
         }
     }
 }

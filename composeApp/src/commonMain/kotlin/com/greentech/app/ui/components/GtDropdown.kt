@@ -37,7 +37,9 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 
 /**
@@ -76,9 +78,9 @@ fun <T> GtDropdown(
             if (busqueda.isBlank()) opciones else opciones.filter { textoOpcion(it).contains(busqueda.trim(), ignoreCase = true) }
         }
         GtBottomSheet(onCerrar = { abierto = false }) {
-            Column(Modifier.padding(horizontal = 20.dp)) {
-                Text(etiqueta, style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.size(12.dp))
+            Column(Modifier.padding(horizontal = Dimens.margenLateral)) {
+                Text(etiqueta, style = GtTexto.tituloTarjeta)
+                Spacer(Modifier.size(Dimens.md))
                 if (buscable) {
                     GtTextField(
                         valor = busqueda,
@@ -87,37 +89,37 @@ fun <T> GtDropdown(
                         icono = Icons.Outlined.Search,
                         accionIme = ImeAction.Search,
                     )
-                    Spacer(Modifier.size(8.dp))
+                    Spacer(Modifier.size(Dimens.sm))
                 }
             }
             if (filtradas.isEmpty()) {
                 Text(
                     Textos.Comun.SIN_RESULTADOS,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = GtTexto.cuerpo,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier.padding(Dimens.lgx),
                 )
             }
-            LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(bottom = 24.dp)) {
+            LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dimens.md).padding(bottom = Dimens.xl)) {
                 items(filtradas, key = { textoOpcion(it) }) { op ->
                     val elegido = op == seleccionado
                     Surface(
                         onClick = { onSeleccion(op); abierto = false },
                         shape = GtShapes.campo,
                         color = if (elegido) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).semantics {
+                        modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.xxs).semantics {
                             role = Role.RadioButton
                             if (elegido) stateDescription = Textos.Comun.SELECCIONADO
                         },
                     ) {
                         Row(
-                            Modifier.heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+                            Modifier.heightIn(min = Dimens.filaLista).padding(horizontal = Dimens.lg, vertical = Dimens.sm),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(Modifier.weight(1f)) {
-                                Text(textoOpcion(op), style = MaterialTheme.typography.bodyLarge)
+                                Text(textoOpcion(op), style = GtTexto.cuerpo)
                                 subtextoOpcion?.let {
-                                    Text(it(op), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(it(op), style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                             if (elegido) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -145,27 +147,27 @@ internal fun CampoSeleccion(
     val esquema = MaterialTheme.colorScheme
     val borde by animateColorAsState(if (error != null) esquema.error else esquema.outline, Motion.media(), label = "bordeCampo")
     Column(modifier.fillMaxWidth().sacudir(disparadorSacudida(error, enfocado = false))) {
-        Text(etiqueta, style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.size(8.dp))
+        Text(etiqueta, style = GtTexto.tituloTarjeta)
+        Spacer(Modifier.size(Dimens.sm))
         Surface(
             onClick = onClick,
             interactionSource = interaccion,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).efectoPresion(interaccion),
+            modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.tactilMin).efectoPresion(interaccion),
             shape = GtShapes.campo,
             color = esquema.surface,
             border = BorderStroke(if (error != null) 2.dp else 1.dp, borde),
         ) {
             Row(
-                Modifier.heightIn(min = 56.dp).padding(horizontal = 16.dp),
+                Modifier.heightIn(min = Dimens.tactilMin).padding(horizontal = Dimens.lg),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (icono != null) {
                     Icon(icono, null, tint = esquema.onSurfaceVariant)
-                    Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.width(Dimens.md))
                 }
                 Text(
                     valor ?: placeholder,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = GtTexto.cuerpo,
                     color = if (valor == null) esquema.onSurfaceVariant else esquema.onSurface,
                     modifier = Modifier.weight(1f),
                 )
@@ -173,8 +175,8 @@ internal fun CampoSeleccion(
             }
         }
         if (error != null) {
-            Spacer(Modifier.size(4.dp))
-            MensajeError(error, Modifier.padding(start = 16.dp))
+            Spacer(Modifier.size(Dimens.xs))
+            MensajeError(error, Modifier.padding(start = Dimens.lg))
         }
     }
 }

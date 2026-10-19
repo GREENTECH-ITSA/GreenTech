@@ -13,16 +13,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FilterAltOff
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilterAltOff
-import androidx.compose.material.icons.outlined.SearchOff
-import com.greentech.app.ui.components.FiltrosActivos
-import com.greentech.app.ui.components.textoConteo
-import com.greentech.app.util.FechasUi
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.EmptyState
 import com.greentech.app.ui.components.EstadoContenido
+import com.greentech.app.ui.components.FiltrosActivos
 import com.greentech.app.ui.components.GtCard
 import com.greentech.app.ui.components.GtChipFiltro
 import com.greentech.app.ui.components.GtScaffold
@@ -38,13 +36,17 @@ import com.greentech.app.ui.components.GtTopBar
 import com.greentech.app.ui.components.IconosDominio
 import com.greentech.app.ui.components.IconosModulo
 import com.greentech.app.ui.components.entradaEscalonada
+import com.greentech.app.ui.components.textoConteo
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ParColores
 import com.greentech.app.ui.theme.ThemeMode
+import com.greentech.app.util.FechasUi
 import com.greentech.shared.domain.model.Auditoria
 import com.greentech.shared.domain.model.TipoAuditoria
 import com.greentech.shared.util.Fechas
@@ -62,19 +64,19 @@ fun AuditoriaScreen(estado: AuditoriaUiState, onEvent: (AuditoriaEvent) -> Unit)
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
             Text(
                 Textos.Auditoria.SUBTITULO,
-                style = MaterialTheme.typography.bodyMedium,
+                style = GtTexto.ayuda,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier = Modifier.padding(horizontal = Dimens.margenLateral),
             )
             GtChipFiltro(
                 opciones = listOf<TipoAuditoria?>(null) + TipoAuditoria.entries,
                 seleccionado = estado.tipo,
                 onSeleccion = { onEvent(AuditoriaEvent.ElegirTipo(it)) },
                 etiqueta = { it?.etiqueta ?: Textos.Comun.TODOS },
-                margen = 20.dp,
+                margen = Dimens.margenLateral,
                 icono = { it?.let(IconosDominio::auditoria) ?: IconosModulo.auditoria },
             )
             EstadoContenido(
@@ -93,8 +95,8 @@ fun AuditoriaScreen(estado: AuditoriaUiState, onEvent: (AuditoriaEvent) -> Unit)
                 } else {
                     LazyColumn(
                         Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = padding.calculateBottomPadding() + 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(start = Dimens.margenLateral, end = Dimens.margenLateral, bottom = padding.calculateBottomPadding() + Dimens.xl),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.sm),
                     ) {
                         item(key = "conteo") {
                             FiltrosActivos(
@@ -124,20 +126,20 @@ private fun TipoAuditoria.colores(): ParColores = when (this) {
 @Composable
 private fun TarjetaAuditoria(a: Auditoria, modifier: Modifier = Modifier) {
     val colores = a.tipo.colores()
-    GtCard(modifier.semantics(mergeDescendants = true) {}, relleno = 12.dp) {
+    GtCard(modifier.semantics(mergeDescendants = true) {}, relleno = Dimens.md) {
         Row(verticalAlignment = Alignment.Top) {
             Box(
                 Modifier.size(40.dp).clip(GtShapes.campo).background(colores.fondo),
                 contentAlignment = Alignment.Center,
-            ) { Icon(IconosDominio.auditoria(a.tipo), contentDescription = null, tint = colores.contenido, modifier = Modifier.size(20.dp)) }
-            Spacer(Modifier.width(12.dp))
+            ) { Icon(IconosDominio.auditoria(a.tipo), contentDescription = null, tint = colores.contenido, modifier = Modifier.size(Dimens.iconoChico)) }
+            Spacer(Modifier.width(Dimens.md))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(a.tipo.etiqueta, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                    Text(FechasUi.relativa(a.fecha), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(a.tipo.etiqueta, style = GtTexto.tituloTarjeta, modifier = Modifier.weight(1f))
+                    Text(FechasUi.relativa(a.fecha), style = GtTexto.etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Text(a.detalle, style = MaterialTheme.typography.bodyMedium)
-                Text(a.usuario, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(a.detalle, style = GtTexto.ayuda)
+                Text(a.usuario, style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

@@ -37,8 +37,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -52,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.tabular
@@ -87,16 +88,16 @@ fun GtStepper(
     }
     Column(modifier.sacudir(disparadorSacudida(error, enfocado))) {
         Text(etiqueta, style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Dimens.sm))
         Surface(
             shape = GtShapes.mosaico,
             color = esquema.surface,
             border = BorderStroke(if (enfocado || error != null) 2.dp else 1.dp, if (error != null) esquema.error else if (enfocado) esquema.primary else esquema.outline),
         ) {
             Row(
-                Modifier.fillMaxWidth().padding(8.dp),
+                Modifier.fillMaxWidth().padding(Dimens.sm),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
             ) {
                 BotonPaso(Icons.Outlined.Remove, Textos.Comun.DISMINUIR, (valor ?: 0) > minimo) {
                     cambiar(((valor ?: 0) - paso).coerceAtLeast(minimo))
@@ -155,12 +156,12 @@ fun GtStepper(
             }
         }
         when {
-            error != null -> MensajeError(error, Modifier.padding(start = 16.dp, top = 4.dp))
+            error != null -> MensajeError(error, Modifier.padding(start = Dimens.lg, top = Dimens.xs))
             ayuda != null -> Text(
                 ayuda,
                 style = MaterialTheme.typography.bodySmall,
                 color = esquema.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+                modifier = Modifier.padding(start = Dimens.lg, top = Dimens.xs),
             )
         }
     }
@@ -181,5 +182,5 @@ private fun BotonPaso(icono: ImageVector, descripcion: String, habilitado: Boole
             disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
-    ) { Icon(icono, contentDescription = descripcion, modifier = Modifier.size(28.dp)) }
+    ) { Icon(icono, contentDescription = descripcion, modifier = Modifier.size(Dimens.iconoMediano)) }
 }

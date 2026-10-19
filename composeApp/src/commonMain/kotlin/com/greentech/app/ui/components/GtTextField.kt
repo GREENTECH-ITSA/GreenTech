@@ -41,9 +41,10 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 
 /**
@@ -94,20 +95,20 @@ fun GtTextField(
         onValueChange = onValorChange,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = Dimens.tactilMin)
             .sacudir(disparoSacudida)
             .semantics {
                 if (!etiquetaVisible) contentDescription = etiqueta
                 if (errorVisible != null) error(errorVisible)
             },
         enabled = habilitado,
-        label = if (etiquetaVisible) { { Text(etiqueta, style = MaterialTheme.typography.labelMedium) } } else null,
+        label = if (etiquetaVisible) { { Text(etiqueta, style = GtTexto.etiqueta) } } else null,
         placeholder = placeholder?.let { { Text(it, color = esquema.onSurfaceVariant) } },
         leadingIcon = icono?.let { { Icon(it, contentDescription = null) } },
         trailingIcon = when {
             esPassword -> {
                 {
-                    IconButton(onClick = { mostrar = !mostrar }, modifier = Modifier.size(56.dp)) {
+                    IconButton(onClick = { mostrar = !mostrar }, modifier = Modifier.size(Dimens.tactilMin)) {
                         Icon(
                             if (mostrar) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = if (mostrar) Textos.Comun.OCULTAR_PASSWORD else Textos.Comun.MOSTRAR_PASSWORD,
@@ -127,12 +128,12 @@ fun GtTextField(
                     label = "textoApoyo",
                 ) { texto ->
                     if (texto == errorVisible && errorVisible != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(20.dp))
-                            Text(errorVisible, style = MaterialTheme.typography.bodySmall)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+                            Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(Dimens.iconoChico))
+                            Text(errorVisible, style = GtTexto.ayuda)
                         }
                     } else if (texto != null) {
-                        Text(texto, style = MaterialTheme.typography.bodySmall)
+                        Text(texto, style = GtTexto.ayuda)
                     }
                 }
             }
@@ -150,7 +151,7 @@ fun GtTextField(
         singleLine = lineas == 1,
         minLines = lineas,
         maxLines = if (lineas == 1) 1 else lineas + 3,
-        textStyle = MaterialTheme.typography.bodyLarge,
+        textStyle = GtTexto.cuerpo,
         shape = GtShapes.campo,
         interactionSource = interaccion,
         colors = OutlinedTextFieldDefaults.colors(

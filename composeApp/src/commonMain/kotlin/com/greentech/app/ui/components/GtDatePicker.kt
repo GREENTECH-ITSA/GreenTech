@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.heightIn
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.theme.Dimens
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.shared.util.Fechas
 import kotlinx.datetime.LocalDate
 
@@ -64,11 +65,11 @@ fun GtDatePicker(
                         abierto = false
                     },
                     modifier = Modifier.heightIn(min = Dimens.tactilMin),
-                ) { Text(Textos.Comun.ELEGIR_FECHA, style = MaterialTheme.typography.labelLarge) }
+                ) { Text(Textos.Comun.ELEGIR_FECHA, style = GtTexto.boton) }
             },
             dismissButton = {
                 TextButton(onClick = { abierto = false }, modifier = Modifier.heightIn(min = Dimens.tactilMin)) {
-                    Text(Textos.Comun.CANCELAR, style = MaterialTheme.typography.labelLarge)
+                    Text(Textos.Comun.CANCELAR, style = GtTexto.boton)
                 }
             },
             shape = MaterialTheme.shapes.extraLarge,

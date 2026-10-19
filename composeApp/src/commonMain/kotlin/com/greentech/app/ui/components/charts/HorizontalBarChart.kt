@@ -25,6 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.formatearNumero
+import com.greentech.app.ui.theme.Dimens
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.tabular
 
 /**
@@ -47,7 +49,7 @@ fun HorizontalBarChart(
     val atenuado = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = Grafica.ALFA_ATENUADO)
     val resumen = "$descripcion. " + datos.joinToString(". ") { "${it.first}: ${formatearNumero(it.second.toDouble())}$sufijo" }
 
-    Column(modifier.clearAndSetSemantics { contentDescription = resumen }, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(modifier.clearAndSetSemantics { contentDescription = resumen }, verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
         datos.forEachIndexed { i, (nombre, valor) ->
             val destacado = i == (tocado ?: indiceMayor)
             Row(
@@ -56,14 +58,14 @@ fun HorizontalBarChart(
             ) {
                 Text(
                     nombre,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (destacado) FontWeight.SemiBold else FontWeight.Medium),
+                    style = GtTexto.etiqueta.copy(fontWeight = if (destacado) FontWeight.SemiBold else FontWeight.Medium),
                     color = if (destacado) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.width(104.dp),
                 )
                 val p = progresoEscalonado(entrada, i, datos.size)
-                Canvas(Modifier.weight(1f).height(16.dp)) {
+                Canvas(Modifier.weight(1f).height(Grafica.altoBarraHorizontal)) {
                     barraHorizontal(if (destacado) color else atenuado, 0f, size.height, size.width * (valor.toFloat() / maximo) * p)
                 }
                 Text(

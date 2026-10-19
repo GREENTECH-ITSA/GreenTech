@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
 
 /**
@@ -27,16 +28,16 @@ fun GtCard(
     destacada: Boolean = false,
     colorFondo: Color? = null,
     colorBorde: Color? = null,
-    relleno: Dp = 16.dp,
+    relleno: Dp = Dimens.rellenoTarjeta,
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
     val fondo = colorFondo ?: if (destacada) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow
-    val borde = colorBorde?.let { BorderStroke(1.dp, it) }
+    val borde = colorBorde?.let { BorderStroke(Dimens.borde, it) }
     if (onClick != null) {
         val interaccion = remember { MutableInteractionSource() }
         Surface(
             onClick = onClick,
-            modifier = modifier.fillMaxWidth().efectoPresion(interaccion),
+            modifier = modifier.fillMaxWidth().efectoPresion(interaccion).anilloFoco(interaccion, GtShapes.tarjeta),
             shape = GtShapes.tarjeta,
             color = fondo,
             border = borde,

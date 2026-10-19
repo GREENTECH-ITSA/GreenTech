@@ -546,6 +546,30 @@ object Textos {
         const val SIN_DATOS = "Sin datos"
         const val TOCA_PARA_VER = "Toca para ver detalle"
     }
+
+    /** Indicador de salud vegetal y su leyenda. */
+    object Salud {
+        const val TITULO = "Salud de las plantas"
+        const val VER_LEYENDA = "Ver qué significa cada estado de salud"
+        const val LEYENDA_INTRO = "Cada estado tiene su color, su ícono y su forma, para reconocerlo aunque no se distinga el color."
+        const val SANA = "Sin daños visibles. Sigue el cuidado normal."
+        const val EN_OBSERVACION = "Algo llamó la atención. Revísala en los próximos días."
+        const val AFECTADA = "Tiene plaga, enfermedad o daño. Necesita tratamiento."
+        const val CRITICA = "Riesgo de perder plantas. Atiéndela de inmediato."
+        const val FORMA_CIRCULO = "Círculo lleno"
+        const val FORMA_CIRCULO_BORDE = "Círculo con borde"
+        const val FORMA_TRIANGULO = "Triángulo"
+        const val FORMA_ROMBO = "Rombo"
+    }
+
+    /** Indicadores de la tarjeta de lote (los datos llegan en la Parte 2). */
+    object LoteCard {
+        const val TAREA_PENDIENTE = "1 tarea pendiente"
+        const val TAREAS_PENDIENTES = "%d tareas pendientes"
+        const val EN_TRANSITO = "En tránsito"
+        const val PLANTAS_EN_TRANSITO = "%d plantas en tránsito"
+        const val ULTIMA_ACTIVIDAD = "Última actividad"
+    }
 }
 
 /** Completa los marcadores %s y %d de un texto, en orden: "Paso %d de %d".conValores(1, 3). */

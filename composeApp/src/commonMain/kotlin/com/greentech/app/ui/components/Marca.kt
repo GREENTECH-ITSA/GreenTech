@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.greentech.app.resources.Res
 import com.greentech.app.resources.logo_icon_transparente
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.interFontFamily
 import org.jetbrains.compose.resources.painterResource
 
@@ -68,7 +69,7 @@ fun MarcaGreenTech(
         Column(
             modifier.then(semantica),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
             EmblemaGreenTech(tamano = tamanoEmblema, descripcion = null)
             LogotipoGreenTech(tamano = tamanoTexto)
@@ -77,7 +78,7 @@ fun MarcaGreenTech(
         Row(
             modifier.then(semantica),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
         ) {
             EmblemaGreenTech(tamano = tamanoEmblema, descripcion = null)
             LogotipoGreenTech(tamano = tamanoTexto)

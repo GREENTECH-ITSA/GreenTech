@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.greentech.app.ui.components.EmblemaGreenTech
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.app.ui.theme.interFontFamily
@@ -54,7 +56,7 @@ fun SplashScreen() {
             contentDescription = Textos.Comun.LOGO
         },
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.spacedBy(Dimens.lg, Alignment.CenterVertically),
     ) {
         EmblemaGreenTech(
             tamano = 144.dp,
@@ -71,7 +73,7 @@ fun SplashScreen() {
         }
         Text(
             Textos.Splash.LEMA,
-            style = MaterialTheme.typography.bodyLarge,
+            style = GtTexto.cuerpo,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.graphicsLayer { alpha = grupos[2].value },
         )

@@ -48,8 +48,10 @@ import com.greentech.app.ui.notification.Notificacion
 import com.greentech.app.ui.notification.NotificationManager
 import com.greentech.app.ui.notification.TipoNotificacion
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ParColores
 import kotlinx.coroutines.channels.Channel
@@ -66,22 +68,22 @@ fun GtNotification(notificacion: Notificacion, onCerrar: () -> Unit, modifier: M
     GlassSurface(
         modifier = modifier
             .fillMaxWidth()
-            .widthIn(max = 640.dp)
+            .widthIn(max = Dimens.anchoMaximo)
             .semantics { liveRegion = LiveRegionMode.Assertive },
         shape = GtShapes.mosaico,
         elevada = true,
         bordeColor = colores.contenido,
     ) {
-        Row(Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) {
+        Row(Modifier.padding(start = Dimens.lg, top = Dimens.md, bottom = Dimens.md, end = Dimens.xs), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(Dimens.iconoGrande), contentAlignment = Alignment.Center) {
                 IconoNotificacion(notificacion.tipo, colores)
             }
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(notificacion.titulo, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
-                Text(notificacion.mensaje, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(Modifier.width(Dimens.md))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
+                Text(notificacion.titulo, style = GtTexto.tituloTarjeta, color = MaterialTheme.colorScheme.onSurface)
+                Text(notificacion.mensaje, style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurface)
             }
-            IconButton(onClick = onCerrar, modifier = Modifier.size(48.dp)) {
+            IconButton(onClick = onCerrar, modifier = Modifier.size(Dimens.tactilMin)) {
                 Icon(Icons.Outlined.Close, contentDescription = Textos.Comun.CERRAR, tint = MaterialTheme.colorScheme.onSurface)
             }
         }
@@ -99,7 +101,7 @@ private fun coloresNotificacion(tipo: TipoNotificacion): ParColores = when (tipo
 @Composable
 private fun IconoNotificacion(tipo: TipoNotificacion, colores: ParColores) {
     if (tipo == TipoNotificacion.EXITO) {
-        CheckAnimado(Modifier.size(28.dp), color = colores.contenido)
+        CheckAnimado(Modifier.size(Dimens.iconoMediano), color = colores.contenido)
         return
     }
     val icono: ImageVector = when (tipo) {
@@ -114,7 +116,7 @@ private fun IconoNotificacion(tipo: TipoNotificacion, colores: ParColores) {
         icono,
         contentDescription = null,
         tint = colores.contenido,
-        modifier = Modifier.size(28.dp).graphicsLayer {
+        modifier = Modifier.size(Dimens.iconoMediano).graphicsLayer {
             scaleX = escala.value
             scaleY = escala.value
         },
@@ -158,7 +160,7 @@ fun GtNotificationHost(manager: NotificationManager, modifier: Modifier = Modifi
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
         enter = slideInVertically(Motion.resorte()) { -it } + fadeIn(Motion.media()),
         exit = slideOutVertically(Motion.media()) { -it } + fadeOut(Motion.media()),
     ) {

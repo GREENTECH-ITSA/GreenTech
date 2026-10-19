@@ -35,7 +35,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ParColores
 
@@ -58,13 +60,13 @@ fun <T> GtChipGroup(
 ) {
     Column(modifier.fillMaxWidth().sacudir(disparadorSacudida(error, enfocado = false))) {
         if (titulo != null) {
-            Text(titulo, style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.size(8.dp))
+            Text(titulo, style = GtTexto.tituloTarjeta)
+            Spacer(Modifier.size(Dimens.sm))
         }
         if (columnas > 0) {
-            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                 opciones.chunked(columnas).forEach { fila ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                         fila.forEach { op ->
                             GtChip(
                                 texto = etiqueta(op), seleccionado = op == seleccionado, onClick = { onSeleccion(op) },
@@ -78,8 +80,8 @@ fun <T> GtChipGroup(
         } else {
             FlowRow(
                 modifier = Modifier.selectableGroup(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+                verticalArrangement = Arrangement.spacedBy(Dimens.sm),
             ) {
                 opciones.forEach { op ->
                     GtChip(
@@ -90,7 +92,7 @@ fun <T> GtChipGroup(
             }
         }
         if (error != null) {
-            Spacer(Modifier.size(4.dp))
+            Spacer(Modifier.size(Dimens.xs))
             MensajeError(error)
         }
     }
@@ -104,12 +106,12 @@ fun <T> GtChipFiltro(
     onSeleccion: (T) -> Unit,
     etiqueta: (T) -> String,
     modifier: Modifier = Modifier,
-    margen: Dp = 20.dp,
+    margen: Dp = Dimens.margenLateral,
     icono: ((T) -> ImageVector)? = null,
 ) {
     LazyRow(
         modifier = modifier.fillMaxWidth().selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
         contentPadding = PaddingValues(horizontal = margen),
     ) {
         items(opciones, key = { etiqueta(it) }) { op ->
@@ -145,24 +147,25 @@ fun GtChip(
     val interaccion = remember { MutableInteractionSource() }
     Surface(
         modifier = modifier
-            .heightIn(min = 56.dp)
+            .heightIn(min = Dimens.tactilMin)
             .efectoPresion(interaccion)
+            .anilloFoco(interaccion, GtShapes.campo)
             .selectable(selected = seleccionado, onClick = onClick, role = Role.RadioButton, interactionSource = interaccion, indication = ripple()),
         shape = GtShapes.campo,
         color = fondo,
-        border = BorderStroke(1.dp, borde),
+        border = BorderStroke(Dimens.borde, borde),
     ) {
         Row(
-            modifier = Modifier.heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.heightIn(min = Dimens.tactilMin).padding(horizontal = Dimens.lg, vertical = Dimens.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
             when {
-                seleccionado -> Icon(Icons.Outlined.Check, null, tint = contenido, modifier = Modifier.size(20.dp))
-                icono != null -> Icon(icono, null, tint = if (colores != null) colores.contenido else esquema.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                seleccionado -> Icon(Icons.Outlined.Check, null, tint = contenido, modifier = Modifier.size(Dimens.iconoChico))
+                icono != null -> Icon(icono, null, tint = if (colores != null) colores.contenido else esquema.onSurfaceVariant, modifier = Modifier.size(Dimens.iconoChico))
             }
-            if (seleccionado || icono != null) Spacer(Modifier.width(8.dp))
-            Text(texto, style = MaterialTheme.typography.labelLarge, color = contenido, textAlign = TextAlign.Center)
+            if (seleccionado || icono != null) Spacer(Modifier.width(Dimens.sm))
+            Text(texto, style = GtTexto.boton, color = contenido, textAlign = TextAlign.Center)
         }
     }
 }

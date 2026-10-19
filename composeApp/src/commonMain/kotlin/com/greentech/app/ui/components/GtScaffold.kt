@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.EditOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,20 +36,20 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.EditOff
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
@@ -139,7 +141,7 @@ fun FormularioScaffold(
             GlassSurface(Modifier.fillMaxWidth()) {
                 Column(
                     Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).imePadding()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                        .padding(horizontal = Dimens.margenLateral, vertical = Dimens.md),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     GtButton(
@@ -148,7 +150,7 @@ fun FormularioScaffold(
                             foco.clearFocus()
                             onGuardar()
                         },
-                        modifier = Modifier.fillMaxWidth().widthIn(max = 640.dp),
+                        modifier = Modifier.fillMaxWidth().widthIn(max = Dimens.anchoMaximo),
                         habilitado = habilitado, cargando = cargando, variante = variante, icono = icono, exito = exito,
                     )
                     AnimatedVisibility(
@@ -158,9 +160,9 @@ fun FormularioScaffold(
                     ) {
                         Text(
                             "${Textos.Comun.COMPLETA_OBLIGATORIOS} ${faltantes.joinToString(", ")}",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = GtTexto.ayuda,
                             color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(top = 8.dp),
+                            modifier = Modifier.padding(top = Dimens.sm),
                         )
                     }
                 }
@@ -172,13 +174,13 @@ fun FormularioScaffold(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(horizontal = Dimens.margenLateral, vertical = Dimens.lg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.lg),
         ) {
             if (notaObligatorios) {
                 Text(
                     Textos.Comun.NOTA_OBLIGATORIO,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = GtTexto.ayuda,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -245,6 +247,7 @@ fun SeccionFormulario(
     modifier: Modifier = Modifier,
     info: InfoAyuda? = null,
     onVerAyuda: (() -> Unit)? = null,
+    accionTitulo: (@Composable () -> Unit)? = null,
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
     androidx.compose.material3.Surface(
@@ -252,16 +255,17 @@ fun SeccionFormulario(
         shape = com.greentech.app.ui.theme.GtShapes.mosaico,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             if (titulo != null) {
                 androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         titulo,
-                        style = MaterialTheme.typography.titleSmall,
+                        style = GtTexto.tituloTarjeta,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f).semantics { heading() },
                     )
                     if (info != null) BotonInfo(info, onVerAyuda)
+                    accionTitulo?.invoke()
                 }
             }
             contenido()

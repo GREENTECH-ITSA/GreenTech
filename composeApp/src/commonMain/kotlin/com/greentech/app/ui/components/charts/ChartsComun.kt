@@ -1,6 +1,7 @@
 package com.greentech.app.ui.components.charts
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -25,18 +26,30 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.GlassSurface
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.tabular
 
-/** Reglas visuales comunes de las gráficas minimalistas de GreenTech UI. */
+/**
+ * Reglas visuales comunes de las gráficas minimalistas de GreenTech UI (ver design-system/MASTER.md):
+ * - Un solo grosor de línea (2.5 dp) para líneas y sparklines; guías de 1 dp en outlineVariant.
+ * - Colores por serie desde `GreenTechTheme.colors.series` (ventas, merma, humedad, temperatura).
+ * - Etiqueta directa en el periodo resaltado o el último punto; tooltip de vidrio de 128 dp al tocar.
+ * - Entrada única de 600 ms (+40 ms por elemento) con desaceleración cúbica; 0 ms con "Reducir animaciones".
+ */
 internal object Grafica {
     /** Máximo 3 líneas guía horizontales de 1 dp. */
     const val LINEAS_GUIA = 3
     val radioBarra = 6.dp
     val grosorLinea = 2.5.dp
+    val grosorGuia = 1.dp
     val radioPunto = 4.dp
+    val radioPuntoMini = 3.dp
+    val altoBarraHorizontal = 16.dp
     const val ALFA_ATENUADO = 0.4f
+    /** Desaceleración cúbica (ease-out) de la entrada; la misma que aplica [progresoEscalonado]. */
+    val easingEntrada = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
 }
 
 /**
@@ -67,7 +80,7 @@ internal fun progresoEscalonado(global: Float, indice: Int, elementos: Int): Flo
 internal fun DrawScope.lineasGuia(color: Color, alto: Float = size.height) {
     repeat(Grafica.LINEAS_GUIA) { i ->
         val y = alto * i / (Grafica.LINEAS_GUIA - 1)
-        drawLine(color, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
+        drawLine(color, Offset(0f, y), Offset(size.width, y), strokeWidth = Grafica.grosorGuia.toPx())
     }
 }
 
@@ -131,7 +144,7 @@ internal fun TooltipGrafica(titulo: String, lineas: List<String>, modifier: Modi
     // Sin fuente de desenfoque propia: la gráfica está dentro del contenido desenfocable,
     // así que se usa la superficie translúcida de respaldo.
     GlassSurface(modifier, shape = GtShapes.campo, fuente = null, elevada = true) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+        Column(Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm)) {
             Text(titulo, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
             lineas.forEach {
                 Text(it, style = MaterialTheme.typography.labelLarge.tabular(), color = MaterialTheme.colorScheme.onSurface)

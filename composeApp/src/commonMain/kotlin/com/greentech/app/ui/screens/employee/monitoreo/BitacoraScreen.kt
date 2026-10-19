@@ -9,23 +9,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterAltOff
 import androidx.compose.material.icons.outlined.SearchOff
-import com.greentech.app.ui.components.FiltrosActivos
-import com.greentech.app.ui.components.textoConteo
-import com.greentech.app.util.FechasUi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.EmptyState
 import com.greentech.app.ui.components.EstadoContenido
+import com.greentech.app.ui.components.FiltrosActivos
 import com.greentech.app.ui.components.GtChipFiltro
 import com.greentech.app.ui.components.GtScaffold
 import com.greentech.app.ui.components.GtSegmentado
@@ -34,11 +31,15 @@ import com.greentech.app.ui.components.IconosDominio
 import com.greentech.app.ui.components.IconosModulo
 import com.greentech.app.ui.components.TimelineItem
 import com.greentech.app.ui.components.entradaEscalonada
+import com.greentech.app.ui.components.textoConteo
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
+import com.greentech.app.util.FechasUi
 import com.greentech.shared.domain.model.EventoBitacora
 import com.greentech.shared.domain.model.TipoEvento
 import com.greentech.shared.util.Fechas
@@ -62,13 +63,13 @@ fun BitacoraScreen(estado: BitacoraUiState, onEvent: (BitacoraEvent) -> Unit) {
             GtTopBar(Textos.Bitacora.TITULO, subtitulo = subtitulo, onVolver = { onEvent(BitacoraEvent.Volver) }, onAyuda = { onEvent(BitacoraEvent.Ayuda) })
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
             GtSegmentado(
                 opciones = PeriodoBitacora.entries,
                 seleccionado = estado.periodo,
                 onSeleccion = { onEvent(BitacoraEvent.ElegirPeriodo(it)) },
                 etiqueta = { it.etiqueta },
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier = Modifier.padding(horizontal = Dimens.margenLateral),
             )
             GtChipFiltro(
                 opciones = listOf<TipoEvento?>(null) + TipoEvento.entries,
@@ -93,7 +94,7 @@ fun BitacoraScreen(estado: BitacoraUiState, onEvent: (BitacoraEvent) -> Unit) {
                 } else {
                     LineaDeTiempo(
                         lista,
-                        PaddingValues(start = 20.dp, end = 20.dp, bottom = padding.calculateBottomPadding() + 24.dp),
+                        PaddingValues(start = Dimens.margenLateral, end = Dimens.margenLateral, bottom = padding.calculateBottomPadding() + Dimens.xl),
                     ) {
                         FiltrosActivos(
                             resultados = textoConteo(lista.size, Textos.Bitacora.REGISTRO, Textos.Bitacora.REGISTROS),
@@ -135,12 +136,12 @@ private fun LineaDeTiempo(lista: List<EventoBitacora>, contentPadding: PaddingVa
 private fun SeparadorFecha(fecha: LocalDate) {
     Text(
         etiquetaFecha(fecha),
-        style = MaterialTheme.typography.titleSmall,
+        style = GtTexto.tituloTarjeta,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 10.dp)
+            .padding(vertical = Dimens.sm)
             .semantics { heading() },
     )
 }

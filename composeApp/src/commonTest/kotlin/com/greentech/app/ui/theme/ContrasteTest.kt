@@ -97,6 +97,28 @@ class ContrasteTest {
                 add(Par("$tema $nombre.contenido/surface", par.contenido, s.surface, texto))
                 add(Par("$tema $nombre.contenido/surfaceContainerLow", par.contenido, s.surfaceContainerLow, texto))
             }
+            // Alias de dominio (salud vegetal, tareas y traslados): mismas reglas que los pares base.
+            listOf(
+                "salud.sana" to x.salud.sana, "salud.observacion" to x.salud.observacion,
+                "salud.afectada" to x.salud.afectada, "salud.critica" to x.salud.critica,
+                "tarea.pendiente" to x.tarea.pendiente, "tarea.enCurso" to x.tarea.enCurso,
+                "tarea.hecha" to x.tarea.hecha, "tarea.vencida" to x.tarea.vencida,
+                "traslado.enTransito" to x.traslado.enTransito, "traslado.recibido" to x.traslado.recibido,
+                "traslado.cancelado" to x.traslado.cancelado,
+            ).forEach { (nombre, par) ->
+                add(Par("$tema $nombre.contenido/$nombre.fondo", par.contenido, par.fondo, texto))
+                superficies.forEach { (sup, fondo) -> add(Par("$tema $nombre.contenido/$sup", par.contenido, fondo, texto)) }
+                // La forma del indicador (círculo, triángulo, rombo) se dibuja en "contenido" sobre la superficie.
+                add(Par("$tema $nombre (forma)/surfaceContainerHighest", par.contenido, s.surfaceContainerHighest, grafico))
+            }
+            // Series de gráficas y anillo de foco: elementos gráficos (≥ 3:1) sobre todas las superficies.
+            listOf(
+                "serie.ventas" to x.series.ventas, "serie.merma" to x.series.merma,
+                "serie.humedad" to x.series.humedad, "serie.temperatura" to x.series.temperatura,
+                "foco" to x.foco,
+            ).forEach { (nombre, color) ->
+                superficies.forEach { (sup, fondo) -> add(Par("$tema $nombre/$sup (gráfico)", color, fondo, grafico)) }
+            }
         }
     }
 

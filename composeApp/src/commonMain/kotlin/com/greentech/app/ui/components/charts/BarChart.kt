@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.formatearNumero
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
 import com.greentech.app.ui.theme.tabular
 
@@ -72,7 +74,7 @@ fun BarChart(
     Column(modifier.clearAndSetSemantics { contentDescription = resumen }) {
         if (series.size > 1) {
             Leyenda(series.map { it.nombre to it.color })
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.sm))
         }
         BoxWithConstraints(Modifier.fillMaxWidth().height(alto)) {
             val anchoPx = constraints.maxWidth.toFloat()
@@ -113,7 +115,7 @@ fun BarChart(
                 }
                 tocado?.let { i ->
                     val x = size.centroX(i, etiquetas.size)
-                    drawLine(texto.copy(alpha = 0.5f), Offset(x, 0f), Offset(x, base), strokeWidth = 1.dp.toPx())
+                    drawLine(texto.copy(alpha = 0.5f), Offset(x, 0f), Offset(x, base), strokeWidth = Grafica.grosorGuia.toPx())
                 }
             }
             tocado?.let { i ->
@@ -125,12 +127,12 @@ fun BarChart(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .wrapContentSize()
-                        .offset(x = (centro - 64.dp).coerceIn(0.dp, maxWidth - 128.dp))
-                        .width(128.dp),
+                        .offset(x = (centro - Dimens.tooltipGrafica / 2).coerceIn(0.dp, maxWidth - Dimens.tooltipGrafica))
+                        .width(Dimens.tooltipGrafica),
                 )
             }
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(Dimens.sm))
         Row(Modifier.fillMaxWidth()) {
             etiquetas.forEachIndexed { i, e ->
                 Text(
@@ -146,14 +148,17 @@ fun BarChart(
     }
 }
 
-/** Leyenda pequeña, en línea y arriba (solo cuando hay más de una serie). */
+/**
+ * Leyenda pequeña, en línea y arriba (solo cuando hay más de una serie). Cada serie tiene además su
+ * forma (círculo, cuadrado…) para no depender solo del color.
+ */
 @Composable
 internal fun Leyenda(series: List<Pair<String, Color>>) {
-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        series.forEach { (nombre, color) ->
+    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.lg), verticalAlignment = Alignment.CenterVertically) {
+        series.forEachIndexed { i, (nombre, color) ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(10.dp).clip(GtShapes.circulo).background(color))
-                Spacer(Modifier.width(6.dp))
+                Box(Modifier.size(Dimens.puntoLeyenda).clip(if (i % 2 == 0) GtShapes.circulo else RoundedCornerShape(Dimens.xxs)).background(color))
+                Spacer(Modifier.width(Dimens.sm))
                 Text(nombre, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

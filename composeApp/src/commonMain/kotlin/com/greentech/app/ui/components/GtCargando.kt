@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.Motion
 
 /**
@@ -39,7 +40,7 @@ fun GtCargando(modifier: Modifier = Modifier, tamano: Dp = 48.dp, color: Color =
 /** Carga a pantalla completa (centrada) para contenidos que no son listas. */
 @Composable
 fun GtCargandoCentro(modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) { GtCargando() }
+    Box(modifier.fillMaxWidth().padding(vertical = Dimens.xxxl), contentAlignment = Alignment.Center) { GtCargando() }
 }
 
 /**

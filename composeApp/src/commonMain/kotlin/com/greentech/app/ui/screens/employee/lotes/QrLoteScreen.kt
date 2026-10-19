@@ -4,15 +4,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Share
@@ -20,34 +23,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import com.greentech.app.ui.components.CheckAnimado
-import com.greentech.app.platform.Permiso
-import com.greentech.app.platform.rememberEstadoPermiso
-import com.greentech.app.ui.components.GtCard
-import com.greentech.app.ui.components.contexto
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.greentech.app.platform.Permiso
+import com.greentech.app.platform.rememberEstadoPermiso
 import com.greentech.app.resources.Res
 import com.greentech.app.resources.logo_icon
+import com.greentech.app.ui.components.CheckAnimado
 import com.greentech.app.ui.components.EstadoContenido
 import com.greentech.app.ui.components.GtButton
 import com.greentech.app.ui.components.GtButtonVariant
+import com.greentech.app.ui.components.GtCard
 import com.greentech.app.ui.components.GtCargandoCentro
 import com.greentech.app.ui.components.GtScaffold
 import com.greentech.app.ui.components.GtTopBar
+import com.greentech.app.ui.components.contexto
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.app.ui.theme.tabular
 import com.greentech.shared.domain.model.Lote
@@ -91,17 +93,17 @@ fun QrLoteScreen(estado: QrLoteUiState, onEvent: (QrLoteEvent) -> Unit) {
             cargando = { GtCargandoCentro(Modifier.padding(padding)) },
         ) { lote ->
             Column(
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(padding).padding(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(padding).padding(horizontal = Dimens.margenLateral, vertical = Dimens.lg),
+                verticalArrangement = Arrangement.spacedBy(Dimens.lg),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val ancho = Modifier.widthIn(max = 640.dp).fillMaxWidth()
+                val ancho = Modifier.widthIn(max = Dimens.anchoMaximo).fillMaxWidth()
                 if (estado.recienCreado) AvisoRegistrado(ancho)
                 TarjetaQr(lote, Modifier.widthIn(max = 420.dp).fillMaxWidth())
                 if (!estado.recienCreado) {
                     Text(
                         Textos.Qr.INSTRUCCION,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = GtTexto.cuerpo,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
@@ -138,11 +140,11 @@ private fun AvisoRegistrado(modifier: Modifier) {
     val c = GreenTechTheme.colors.exito
     GtCard(modifier.semantics(mergeDescendants = true) {}, colorFondo = c.fondo) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            CheckAnimado(Modifier.size(32.dp), color = c.contenido)
-            Spacer(Modifier.width(12.dp))
+            CheckAnimado(Modifier.size(Dimens.iconoGrande), color = c.contenido)
+            Spacer(Modifier.width(Dimens.md))
             Column(Modifier.weight(1f)) {
-                Text(Textos.Qr.LISTO_TITULO, style = MaterialTheme.typography.titleMedium, color = c.contenido, modifier = Modifier.semantics { heading() })
-                Text(Textos.Qr.LISTO_MENSAJE, style = MaterialTheme.typography.bodyMedium, color = c.contenido)
+                Text(Textos.Qr.LISTO_TITULO, style = GtTexto.tituloTarjeta, color = c.contenido, modifier = Modifier.semantics { heading() })
+                Text(Textos.Qr.LISTO_MENSAJE, style = GtTexto.ayuda, color = c.contenido)
             }
         }
     }
@@ -171,18 +173,18 @@ private fun TarjetaQr(lote: Lote, modifier: Modifier) {
         }
     }
     // Siempre blanca con tinta oscura, también en tema oscuro, para que cualquier lector la escanee.
-    Surface(modifier, shape = GtShapes.mosaico, color = x.qrFondo, contentColor = x.qrTinta, shadowElevation = 2.dp) {
+    Surface(modifier, shape = GtShapes.mosaico, color = x.qrFondo, contentColor = x.qrTinta) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
+            Modifier.fillMaxWidth().padding(Dimens.lgx),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.sm),
         ) {
             Image(qr, contentDescription = "${Textos.Qr.DESCRIPCION} ${lote.codigo}", modifier = Modifier.size(260.dp))
-            Text(lote.codigo, style = MaterialTheme.typography.headlineMedium.tabular(), color = x.qrTinta)
-            Text(lote.especie.nombre, style = MaterialTheme.typography.titleLarge, color = x.qrTinta)
+            Text(lote.codigo, style = GtTexto.tituloPantalla.tabular(), color = x.qrTinta)
+            Text(lote.especie.nombre, style = GtTexto.tituloTarjeta, color = x.qrTinta)
             Text(
                 "${lote.etapa.etiqueta} · ${Textos.Qr.SEMBRADO} ${Fechas.corta(lote.fechaSiembra)} · ${lote.zona.nombre}",
-                style = MaterialTheme.typography.bodyMedium,
+                style = GtTexto.ayuda,
                 color = x.qrTinta,
                 textAlign = TextAlign.Center,
             )

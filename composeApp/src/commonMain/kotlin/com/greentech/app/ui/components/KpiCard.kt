@@ -8,11 +8,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.TrendingDown
 import androidx.compose.material.icons.automirrored.outlined.TrendingFlat
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -24,7 +24,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.charts.Sparkline
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.tabular
 import com.greentech.app.util.formatoDecimal
 
@@ -63,15 +65,15 @@ fun KpiTile(
         onClick = if (info != null) ({ infoAbierta = true }) else onClick,
         descripcion = listOfNotNull("$titulo: $textoFinal", textoVariacion, info?.let { Textos.Dashboard.TOCA_KPI }).joinToString(". "),
     ) {
-        NumeroAnimado(valor, MaterialTheme.typography.headlineMedium, decimales = decimales, sufijo = sufijo)
+        NumeroAnimado(valor, GtTexto.tituloPantalla, decimales = decimales, sufijo = sufijo)
         // Se reserva siempre el espacio de la tendencia y la variación para que los KPI de una fila midan lo mismo.
-        Spacer(Modifier.height(6.dp))
-        if (tendencia.size >= 2) Sparkline(tendencia, colorSerie, alto = 24.dp) else Spacer(Modifier.height(24.dp))
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(Dimens.sm))
+        if (tendencia.size >= 2) Sparkline(tendencia, colorSerie, alto = Dimens.xl) else Spacer(Modifier.height(Dimens.xl))
+        Spacer(Modifier.height(Dimens.sm))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (variacion != null) Variacion(variacion, mejorSiSube) else Spacer(Modifier.height(18.dp))
+            if (variacion != null) Variacion(variacion, mejorSiSube) else Spacer(Modifier.height(Dimens.lgx))
             Spacer(Modifier.weight(1f))
-            if (info != null) Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            if (info != null) Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(Dimens.iconoChico))
         }
     }
     if (infoAbierta && info != null) {
@@ -105,11 +107,11 @@ fun Variacion(porcentaje: Double, mejorSiSube: Boolean = true, modifier: Modifie
         else -> Icons.AutoMirrored.Outlined.TrendingFlat
     }
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(icono, null, tint = color, modifier = Modifier.size(16.dp))
-        Spacer(Modifier.size(4.dp))
+        Icon(icono, null, tint = color, modifier = Modifier.size(Dimens.iconoMini))
+        Spacer(Modifier.size(Dimens.xs))
         Text(
             if (!sube && !baja) Textos.Disenio.SIN_CAMBIO else textoPorcentaje(porcentaje),
-            style = MaterialTheme.typography.labelMedium.tabular(),
+            style = GtTexto.etiqueta.tabular(),
             color = color,
             maxLines = 1,
         )

@@ -7,13 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -21,9 +21,9 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,8 +35,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 
 /**
  * Diálogo de confirmación para acciones destructivas o irreversibles. Superficie sólida (texto
@@ -91,25 +93,25 @@ fun ConfirmSheet(
  */
 @Composable
 fun ResumenFila(etiqueta: String, valor: String, modifier: Modifier = Modifier) {
-    val base = modifier.fillMaxWidth().padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
+    val base = modifier.fillMaxWidth().padding(vertical = Dimens.xs).semantics(mergeDescendants = true) {}
     if (valor.length > LARGO_MAXIMO_EN_LINEA) {
         Column(base) {
-            Text(etiqueta, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(valor, style = MaterialTheme.typography.titleSmall)
+            Text(etiqueta, style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(valor, style = GtTexto.tituloTarjeta)
         }
         return
     }
     Row(base, verticalAlignment = Alignment.Top) {
         Text(
             etiqueta,
-            style = MaterialTheme.typography.bodyMedium,
+            style = GtTexto.ayuda,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(Dimens.md))
         Text(
             valor,
-            style = MaterialTheme.typography.titleSmall,
+            style = GtTexto.tituloTarjeta,
             textAlign = TextAlign.End,
             modifier = Modifier.weight(1.4f),
         )
@@ -126,7 +128,7 @@ fun ResumenConfirmacion(contenido: @Composable ColumnScope.() -> Unit) {
         shape = GtShapes.campo,
         color = MaterialTheme.colorScheme.surface,
     ) {
-        Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), content = contenido)
+        Column(Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm), content = contenido)
     }
 }
 
@@ -144,29 +146,29 @@ private fun ContenidoConfirmacion(
     textoCancelar: String = Textos.Comun.CANCELAR,
 ) {
     Column(
-        Modifier.padding(24.dp),
+        Modifier.padding(Dimens.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(Dimens.md),
     ) {
         val colores = if (peligro) GreenTechTheme.colors.error else GreenTechTheme.colors.primario
         Box(
-            Modifier.size(64.dp).clip(GtShapes.circulo).background(colores.fondo),
+            Modifier.size(Dimens.circuloHoja).clip(GtShapes.circulo).background(colores.fondo),
             contentAlignment = Alignment.Center,
-        ) { Icon(icono, null, tint = colores.contenido, modifier = Modifier.size(32.dp)) }
+        ) { Icon(icono, null, tint = colores.contenido, modifier = Modifier.size(Dimens.iconoGrande)) }
         Text(
             titulo,
-            style = MaterialTheme.typography.titleLarge,
+            style = GtTexto.tituloTarjeta,
             textAlign = TextAlign.Center,
             modifier = Modifier.semantics { heading() },
         )
         Text(
             mensaje,
-            style = MaterialTheme.typography.bodyLarge,
+            style = GtTexto.cuerpo,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         detalle()
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(Dimens.xs))
         GtButton(
             texto = textoConfirmar,
             onClick = onConfirmar,

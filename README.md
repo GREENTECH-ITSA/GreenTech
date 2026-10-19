@@ -112,7 +112,23 @@ Los íconos se generaron recortando el emblema circular de `logo.jpg`. Si cambia
    ```
    No hace falta tocar ninguna pantalla: la UI solo conoce las interfaces de repositorio.
 
-## Sistema de diseño ("GreenTech UI")
+## Sistema de diseño
+
+La fuente de verdad es **[design-system/MASTER.md](design-system/MASTER.md)**: paleta verde 50–900 derivada del
+logo, colores semánticos de salud vegetal, tareas y traslados, roles tipográficos (`GtTexto`), espaciado (`Dimens`),
+formas, componentes con sus estados, reglas de gráficas y jerarquía por tipo de pantalla. La auditoría que lo
+originó (qué se conservó, qué se refinó y qué se descartó) está en [design-system/AUDITORIA.md](design-system/AUDITORIA.md).
+
+Resumen rápido:
+
+- **Dirección:** "botánica técnica": superficies tonales sin sombras, cifras grandes con `tnum` y color reservado
+  para el estado de la planta.
+- **Salud vegetal:** `PlantHealthIndicator` (chip, punto con etiqueta y anillo). Cada estado tiene token, ícono y
+  forma (sana ● · en observación ○ · afectada ▲ · crítica ◆); la leyenda se abre con el ícono Info.
+- **LoteCard v2:** variantes normal, compacta y destacada, con ranuras para "tareas pendientes" y "en tránsito".
+- **Detalle distintivo:** el corte de hoja del logo (`GtShapes.hojaCorte`), solo en el saludo de Inicio, el resumen
+  del Detalle del lote y la LoteCard destacada.
+- **Foco visible:** anillo azul agua de 3 dp (`anilloFoco`) en botones, tarjetas, mosaicos y chips.
 
 Todo vive en `composeApp/src/commonMain/kotlin/com/greentech/app/ui/theme/` y `ui/components/`.
 Las pantallas **no tienen colores fijos**: leen `MaterialTheme.colorScheme` o `GreenTechTheme.colors`.
@@ -121,8 +137,8 @@ Las pantallas **no tienen colores fijos**: leen `MaterialTheme.colorScheme` o `G
 |---|---|
 | Sistema | Material 3 con `MaterialExpressiveTheme` y `MotionScheme.expressive()` |
 | Tema | Claro (por defecto, se usa al sol), Oscuro y Sistema. Se elige en Perfil → Apariencia y se guarda con multiplatform-settings |
-| Tipografía | Inter (OFL) en `composeResources/font/`; cifras con `TextStyle.tabular()` (`tnum`) |
-| Formas | 8 · 12 · 16 · 24 · 32 dp. Mosaicos 24 dp, campos 16 dp, botones pill (pasan a 16 dp al presionar) |
+| Tipografía | Inter (OFL) en `composeResources/font/`; roles `GtTexto` (título de pantalla, título de tarjeta, dato, etiqueta, ayuda); cifras con `tnum` |
+| Formas | 8 · 12 · 16 · 24 · 32 dp. Mosaicos 24 dp, tarjetas 20 dp, campos 16 dp, botones pill (pasan a 16 dp al presionar); corte de hoja en 3 lugares |
 | Íconos | Solo `Icons.Outlined.*`. Relleno únicamente en la pestaña activa de la barra inferior. Íconos de módulo en `IconosModulo` |
 | Movimiento | `Motion.kt`: 100 / 200 / 300 ms y resortes. Con "Reducir animaciones" todo dura 0 y no hay bucles |
 
@@ -145,7 +161,7 @@ Las pantallas **no tienen colores fijos**: leen `MaterialTheme.colorScheme` o `G
 | brandGreen | `#559058` (solo ilustración) | `#559058` |
 
 \* El `outline` claro propuesto (`#8A958E`) no llegaba a 3:1 como borde; se oscureció a `#77827B`.
-Los colores extra (éxito, advertencia, vidrio, QR, cámara…) están en `GreenTechExtendedColors` y cambian con el tema.
+Los colores extra (éxito, advertencia, salud, tareas, traslados, series de gráficas, foco, vidrio, QR, cámara…) están en `GreenTechExtendedColors` y cambian con el tema. Las primitivas del logo están en `PaletaGreenTech`.
 
 **Contraste:** `composeApp/src/commonTest/.../ContrasteTest.kt` calcula el contraste WCAG de los pares texto/fondo de
 ambos temas (4.5:1 en texto, 3:1 en íconos grandes y bordes), incluido el peor caso del vidrio. Ejecútala con
@@ -167,7 +183,10 @@ ambos temas (4.5:1 en texto, 3:1 en íconos grandes y bordes), incluido el peor 
 | `GtTextField`, `GtStepper`, `GtChip*`, `GtBuscador` | Campos de 16 dp con sacudida al enviar con error; stepper con número animado |
 | `GtBottomBar` | Cápsula flotante de vidrio con indicador pill que se desliza |
 | `GtNotification` | Banner de vidrio con borde de color por tipo e ícono animado |
-| `charts/` | `Sparkline`, `BarChart`, `HorizontalBarChart`, `LineChart`, `Gauge`: Canvas minimalista con tooltip al tocar |
+| `charts/` | `Sparkline`, `BarChart`, `HorizontalBarChart`, `LineChart`, `Gauge`: Canvas minimalista, un grosor, colores por serie (`colors.series`), etiqueta directa, tooltip al tocar y una sola entrada animada |
+| `PlantHealthIndicator` / `BotonLeyendaSalud` | Salud vegetal con color + ícono + forma, y su leyenda |
+| `LoteCard` | Tarjeta de lote v2 (normal, compacta, destacada) |
+| `VacioMosaico` | Estado vacío compacto dentro de mosaicos |
 
 **Cómo usar `GlassSurface`:** el contenido que va detrás se marca con `Modifier.fuenteVidrio(hazeState)` y el
 elemento flotante usa `GlassSurface(fuente = hazeState)`. `GtScaffold` ya lo hace para la barra superior, el panel
@@ -187,10 +206,10 @@ Box {
 **Cómo usar `BentoTile`:**
 
 ```kotlin
-BentoGrid(contentPadding = PaddingValues(20.dp)) {
+BentoGrid(contentPadding = PaddingValues(Dimens.margenLateral)) {
     bento(BentoSize.S, "lotes") {
         BentoTile(BentoSize.S, etiqueta = "Lotes activos", icono = IconosModulo.lote, onClick = { /* … */ }) {
-            NumeroAnimado(10.0, MaterialTheme.typography.displaySmall)
+            NumeroAnimado(10.0, GtTexto.dato)
         }
     }
     bento(BentoSize.L, "grafica") {

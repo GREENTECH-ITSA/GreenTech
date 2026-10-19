@@ -11,17 +11,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import com.greentech.app.ui.components.InfoAyuda
-import com.greentech.app.ui.components.ResumenConfirmacion
-import com.greentech.app.ui.components.ResumenFila
-import com.greentech.app.ui.components.contexto
-import com.greentech.app.ui.components.obligatorio
-import com.greentech.app.ui.strings.conValores
-import com.greentech.app.util.FechasUi
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.BentoSize
 import com.greentech.app.ui.components.BentoTile
 import com.greentech.app.ui.components.ConfirmSheet
@@ -32,17 +24,26 @@ import com.greentech.app.ui.components.GtDatePicker
 import com.greentech.app.ui.components.GtSegmentado
 import com.greentech.app.ui.components.GtStepper
 import com.greentech.app.ui.components.IconosDominio
+import com.greentech.app.ui.components.InfoAyuda
 import com.greentech.app.ui.components.LoteResumenEstado
 import com.greentech.app.ui.components.NumeroAnimado
+import com.greentech.app.ui.components.ResumenConfirmacion
+import com.greentech.app.ui.components.ResumenFila
 import com.greentech.app.ui.components.SeccionFormulario
+import com.greentech.app.ui.components.contexto
 import com.greentech.app.ui.components.formatearNumero
+import com.greentech.app.ui.components.obligatorio
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ParColores
 import com.greentech.app.ui.theme.ThemeMode
+import com.greentech.app.util.FechasUi
 import com.greentech.app.util.formatoMiles
 import com.greentech.shared.domain.model.MotivoMerma
 import com.greentech.shared.domain.model.TipoSalida
@@ -78,9 +79,9 @@ fun RegistrarSalidaScreen(estado: RegistrarSalidaUiState, onEvent: (RegistrarSal
             descripcion = "${Textos.Salida.DISPONIBLES}: ${estado.disponibles.formatoMiles()} ${Textos.Comun.PLANTAS}",
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
-                NumeroAnimado(estado.disponibles.toDouble(), MaterialTheme.typography.displaySmall)
-                Spacer(Modifier.width(8.dp))
-                Text(Textos.Comun.PLANTAS, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                NumeroAnimado(estado.disponibles.toDouble(), GtTexto.dato)
+                Spacer(Modifier.width(Dimens.sm))
+                Text(Textos.Comun.PLANTAS, style = GtTexto.tituloTarjeta, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         SeccionFormulario(

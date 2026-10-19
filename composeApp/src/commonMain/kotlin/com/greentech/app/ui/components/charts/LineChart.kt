@@ -33,6 +33,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.formatearNumero
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.tabular
 
 /**
@@ -97,7 +98,7 @@ fun LineChart(
                 val path = Path().apply {
                     valores.forEachIndexed { i, v -> if (i == 0) moveTo(x(i), y(v)) else lineTo(x(i), y(v)) }
                 }
-                clipRect(right = size.width * entrada) {
+                clipRect(right = size.width * progresoEscalonado(entrada, 0, 1)) {
                     drawPath(path, color, style = Stroke(Grafica.grosorLinea.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
                 }
                 if (entrada >= 1f) {
@@ -117,7 +118,7 @@ fun LineChart(
                 }
                 tocado?.let { i ->
                     val px = x(i)
-                    drawLine(texto.copy(alpha = 0.5f), Offset(px, 0f), Offset(px, size.height), strokeWidth = 1.dp.toPx())
+                    drawLine(texto.copy(alpha = 0.5f), Offset(px, 0f), Offset(px, size.height), strokeWidth = Grafica.grosorGuia.toPx())
                     drawCircle(color, radius = Grafica.radioPunto.toPx(), center = Offset(px, y(valores[i])))
                 }
             }
@@ -128,13 +129,13 @@ fun LineChart(
                     lineas = listOf("${formatearNumero(valores[i], decimales)} $unidad"),
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .offset(x = (centro - 56.dp).coerceIn(0.dp, maxWidth - 112.dp))
-                        .width(112.dp),
+                        .offset(x = (centro - Dimens.tooltipGrafica / 2).coerceIn(0.dp, maxWidth - Dimens.tooltipGrafica))
+                        .width(Dimens.tooltipGrafica),
                 )
             }
         }
         if (etiquetaInicio != null || etiquetaFin != null) {
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(Dimens.sm))
             Row(Modifier.fillMaxWidth()) {
                 Text(etiquetaInicio.orEmpty(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
                 Text(etiquetaFin.orEmpty(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

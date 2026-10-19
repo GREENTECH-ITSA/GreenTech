@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -43,7 +44,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 
 /**
  * Tamaños de mosaico bento.
@@ -58,9 +61,9 @@ enum class BentoSize(val columnas: Int, val altoMinimo: Dp) {
 }
 
 object BentoDefaults {
-    val separacion = 12.dp
-    val margen = 20.dp
-    val relleno = 16.dp
+    val separacion = Dimens.separacionTarjetas
+    val margen = Dimens.margenLateral
+    val relleno = Dimens.rellenoTarjeta
 }
 
 /** 2 columnas en teléfono y 4 en tablet (ancho de ventana ≥ 600 dp). */
@@ -90,6 +93,7 @@ fun BentoTile(
     descripcion: String? = null,
     relleno: PaddingValues = PaddingValues(BentoDefaults.relleno),
     fondo: @Composable (BoxScope.() -> Unit)? = null,
+    forma: Shape = GtShapes.mosaico,
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
     val semantica = Modifier.semantics(mergeDescendants = descripcion == null) {
@@ -105,8 +109,10 @@ fun BentoTile(
                         if (etiqueta != null) {
                             Text(
                                 etiqueta,
-                                style = MaterialTheme.typography.labelMedium,
+                                style = GtTexto.etiqueta,
                                 color = colorEtiqueta,
+                                // En S se reservan 2 líneas: los datos de mosaicos vecinos quedan alineados.
+                                minLines = if (size == BentoSize.S) 2 else 1,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f),
@@ -115,19 +121,19 @@ fun BentoTile(
                             Spacer(Modifier.weight(1f))
                         }
                         if (icono != null) {
-                            Icon(icono, null, tint = colorIcono, modifier = Modifier.size(28.dp))
+                            Icon(icono, null, tint = colorIcono, modifier = Modifier.size(Dimens.iconoMediano))
                         } else if (onClick != null) {
                             Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = colorIcono)
                         }
                     }
-                    Spacer(Modifier.size(8.dp))
+                    Spacer(Modifier.size(Dimens.sm))
                 }
                 CompositionLocalProvider(LocalContentColor provides colorContenido) {
                     Column(content = contenido)
                 }
                 if (contexto != null) {
-                    Spacer(Modifier.size(4.dp))
-                    Text(contexto, style = MaterialTheme.typography.bodySmall, color = colorEtiqueta)
+                    Spacer(Modifier.size(Dimens.xs))
+                    Text(contexto, style = GtTexto.ayuda, color = colorEtiqueta)
                 }
             }
         }
@@ -136,8 +142,8 @@ fun BentoTile(
         val interaccion = remember { MutableInteractionSource() }
         Surface(
             onClick = onClick,
-            modifier = modifier.then(semantica).efectoPresion(interaccion),
-            shape = GtShapes.mosaico,
+            modifier = modifier.then(semantica).efectoPresion(interaccion).anilloFoco(interaccion, forma),
+            shape = forma,
             color = colorFondo,
             contentColor = colorContenido,
             interactionSource = interaccion,
@@ -145,7 +151,7 @@ fun BentoTile(
     } else {
         Surface(
             modifier = modifier.then(semantica),
-            shape = GtShapes.mosaico,
+            shape = forma,
             color = colorFondo,
             contentColor = colorContenido,
         ) { cuerpo() }
@@ -160,7 +166,7 @@ fun BentoTile(
 fun BentoGrid(
     modifier: Modifier = Modifier,
     estado: LazyGridState = rememberLazyGridState(),
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(Dimens.none),
     contenido: LazyGridScope.() -> Unit,
 ) {
     val columnas = columnasBento()

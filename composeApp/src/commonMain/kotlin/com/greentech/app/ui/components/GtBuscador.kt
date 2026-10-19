@@ -32,7 +32,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 
 /**
@@ -48,19 +50,19 @@ fun GtBuscador(
 ) {
     val foco = LocalFocusManager.current
     val esquema = MaterialTheme.colorScheme
-    Surface(modifier.fillMaxWidth().heightIn(min = 56.dp), shape = GtShapes.pastilla, color = esquema.surfaceContainerHigh) {
-        Row(Modifier.padding(start = 16.dp, end = 4.dp).heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+    Surface(modifier.fillMaxWidth().heightIn(min = Dimens.tactilMin), shape = GtShapes.pastilla, color = esquema.surfaceContainerHigh) {
+        Row(Modifier.padding(start = Dimens.lg, end = Dimens.xs).heightIn(min = Dimens.tactilMin), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Search, contentDescription = null, tint = esquema.onSurfaceVariant)
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(Dimens.md))
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (valor.isEmpty()) {
-                    Text(placeholder, style = MaterialTheme.typography.bodyLarge, color = esquema.onSurfaceVariant, maxLines = 1)
+                    Text(placeholder, style = GtTexto.cuerpo, color = esquema.onSurfaceVariant, maxLines = 1)
                 }
                 BasicTextField(
                     value = valor,
                     onValueChange = onValorChange,
                     singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = esquema.onSurface),
+                    textStyle = GtTexto.cuerpo.copy(color = esquema.onSurface),
                     cursorBrush = SolidColor(esquema.primary),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { foco.clearFocus() }),
@@ -68,7 +70,7 @@ fun GtBuscador(
                 )
             }
             AnimatedVisibility(valor.isNotEmpty(), enter = fadeIn(Motion.rapida()), exit = fadeOut(Motion.rapida())) {
-                IconButton(onClick = { onValorChange("") }, modifier = Modifier.size(48.dp)) {
+                IconButton(onClick = { onValorChange("") }, modifier = Modifier.size(Dimens.tactilMin)) {
                     Icon(Icons.Outlined.Close, contentDescription = Textos.Comun.CERRAR, tint = esquema.onSurfaceVariant)
                 }
             }

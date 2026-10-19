@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
 import com.greentech.app.ui.theme.Motion
@@ -55,19 +56,19 @@ fun LoadingSkeleton(modifier: Modifier = Modifier, tarjetas: Int = 4) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .padding(horizontal = Dimens.margenLateral, vertical = Dimens.lg)
             .semantics { contentDescription = Textos.Comun.CARGANDO },
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(Dimens.md),
     ) {
         repeat(tarjetas) {
             Column(
                 Modifier.fillMaxWidth().height(112.dp).clip(GtShapes.tarjeta)
-                    .background(GreenTechTheme.colors.skeleton.copy(alpha = 0.35f)).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                    .background(GreenTechTheme.colors.skeleton.copy(alpha = 0.35f)).padding(Dimens.lg),
+                verticalArrangement = Arrangement.spacedBy(Dimens.md),
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.md)) {
                     Box(Modifier.size(48.dp).clip(GtShapes.campo).background(brush))
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                         Box(Modifier.fillMaxWidth(0.6f).height(16.dp).clip(GtShapes.pastilla).background(brush))
                         Box(Modifier.fillMaxWidth(0.35f).height(16.dp).clip(GtShapes.pastilla).background(brush))
                     }

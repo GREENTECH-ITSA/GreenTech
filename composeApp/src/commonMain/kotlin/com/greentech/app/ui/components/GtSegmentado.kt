@@ -27,6 +27,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ParColores
 
 /**
@@ -75,26 +77,26 @@ fun <T> GtSegmentado(
                     checkedContainerColor = par?.fondo ?: MaterialTheme.colorScheme.secondaryContainer,
                     checkedContentColor = par?.contenido ?: MaterialTheme.colorScheme.onSecondaryContainer,
                 ),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(horizontal = Dimens.md, vertical = Dimens.sm),
             ) {
                 val textoIcono = icono?.invoke(opcion)
                 if (descripcion != null) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (textoIcono != null) {
-                                Icon(textoIcono, null, modifier = Modifier.size(24.dp))
-                                Spacer(Modifier.size(8.dp))
+                                Icon(textoIcono, null, modifier = Modifier.size(Dimens.icono))
+                                Spacer(Modifier.size(Dimens.sm))
                             }
-                            TextoAjustable(etiqueta(opcion), MaterialTheme.typography.titleMedium)
+                            TextoAjustable(etiqueta(opcion), GtTexto.tituloTarjeta)
                         }
-                        TextoAjustable(descripcion(opcion), MaterialTheme.typography.bodySmall)
+                        TextoAjustable(descripcion(opcion), GtTexto.ayuda)
                     }
                 } else {
                     if (textoIcono != null) {
-                        Icon(textoIcono, null, modifier = Modifier.size(20.dp))
+                        Icon(textoIcono, null, modifier = Modifier.size(Dimens.iconoChico))
                         Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
                     }
-                    TextoAjustable(etiqueta(opcion), MaterialTheme.typography.labelLarge)
+                    TextoAjustable(etiqueta(opcion), GtTexto.boton)
                 }
             }
         }

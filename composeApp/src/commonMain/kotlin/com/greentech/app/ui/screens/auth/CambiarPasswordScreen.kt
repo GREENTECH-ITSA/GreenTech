@@ -19,22 +19,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.FormularioScaffold
-import com.greentech.app.ui.components.SeccionFormulario
 import com.greentech.app.ui.components.GtTextField
+import com.greentech.app.ui.components.SeccionFormulario
 import com.greentech.app.ui.components.obligatorio
 import com.greentech.app.ui.components.rememberEnfoqueInicial
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
 import com.greentech.app.ui.strings.Textos
-import androidx.compose.ui.unit.dp
-import com.greentech.app.ui.theme.ThemeMode
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
+import com.greentech.app.ui.theme.ThemeMode
 
 @Composable
 fun CambiarPasswordScreen(estado: CambiarPasswordUiState, onEvent: (CambiarPasswordEvent) -> Unit) {
@@ -59,7 +61,7 @@ fun CambiarPasswordScreen(estado: CambiarPasswordUiState, onEvent: (CambiarPassw
             esPassword = true,
             error = estado.errorActual,
         )
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             GtTextField(
                 valor = estado.nueva,
                 onValorChange = { onEvent(CambiarPasswordEvent.NuevaCambio(it)) },
@@ -102,15 +104,15 @@ private fun Requisito(texto: String, cumplido: Boolean) {
             stateDescription = if (cumplido) Textos.Password.CUMPLIDO else Textos.Password.PENDIENTE
         },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
     ) {
         Icon(
             if (cumplido) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(Dimens.icono),
         )
-        Text(texto, style = MaterialTheme.typography.bodyMedium, color = color)
+        Text(texto, style = GtTexto.ayuda, color = color)
     }
 }
 

@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Icon
@@ -26,10 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.material.icons.outlined.AutoStories
-import androidx.compose.material.icons.outlined.Close
-import com.greentech.app.ui.components.LocalIntroduccion
-import com.greentech.app.ui.strings.conValores
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,10 +49,14 @@ import com.greentech.app.ui.components.GtButtonVariant
 import com.greentech.app.ui.components.GtScaffold
 import com.greentech.app.ui.components.GtTopBar
 import com.greentech.app.ui.components.IconosModulo
+import com.greentech.app.ui.components.LocalIntroduccion
 import com.greentech.app.ui.components.SectionHeader
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.app.ui.theme.tabular
@@ -71,11 +73,11 @@ fun AyudaScreen(estado: AyudaUiState, onEvent: (AyudaEvent) -> Unit) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 20.dp, end = 20.dp,
-                top = padding.calculateTopPadding() + 8.dp,
-                bottom = padding.calculateBottomPadding() + 24.dp,
+                start = Dimens.margenLateral, end = Dimens.margenLateral,
+                top = padding.calculateTopPadding() + Dimens.sm,
+                bottom = padding.calculateBottomPadding() + Dimens.xl,
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
             item(key = "encabezado") { Encabezado() }
             if (estado.mostrarPrimerosPasos) {
@@ -126,7 +128,7 @@ fun AyudaScreen(estado: AyudaUiState, onEvent: (AyudaEvent) -> Unit) {
                         onAlternar = { onEvent(AyudaEvent.Alternar(p.id)) },
                         modifier = Modifier.animateItem(),
                     ) {
-                        Text(p.respuesta, style = MaterialTheme.typography.bodyLarge)
+                        Text(p.respuesta, style = GtTexto.cuerpo)
                     }
                 }
             }
@@ -136,12 +138,12 @@ fun AyudaScreen(estado: AyudaUiState, onEvent: (AyudaEvent) -> Unit) {
 
 @Composable
 private fun Encabezado() {
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(vertical = Dimens.xs), verticalAlignment = Alignment.CenterVertically) {
         EmblemaGreenTech(tamano = 64.dp)
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(Dimens.md))
         Column {
-            Text(Textos.Ayuda.TITULO, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
-            Text(Textos.Ayuda.SUBTITULO, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(Textos.Ayuda.TITULO, style = GtTexto.tituloPantalla, modifier = Modifier.semantics { heading() })
+            Text(Textos.Ayuda.SUBTITULO, style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -159,7 +161,7 @@ private fun PrimerosPasos(textos: List<String>) {
         colorEtiqueta = sobre,
         colorIcono = sobre,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             textos.forEachIndexed { i, t -> PasoNumerado(i + 1, t, enContenedor = true) }
         }
     }
@@ -170,21 +172,21 @@ private fun PasoNumerado(numero: Int, texto: String, enContenedor: Boolean = fal
     val esquema = MaterialTheme.colorScheme
     Row(verticalAlignment = Alignment.Top) {
         Box(
-            Modifier.size(28.dp).clip(GtShapes.circulo).background(if (enContenedor) esquema.surface else esquema.primaryContainer),
+            Modifier.size(Dimens.iconoMediano).clip(GtShapes.circulo).background(if (enContenedor) esquema.surface else esquema.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 "$numero",
-                style = MaterialTheme.typography.labelLarge.tabular(),
+                style = GtTexto.etiqueta.tabular(),
                 color = if (enContenedor) esquema.onSurface else esquema.onPrimaryContainer,
             )
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(Dimens.md))
         Text(
             texto,
-            style = MaterialTheme.typography.bodyLarge,
+            style = GtTexto.cuerpo,
             color = if (enContenedor) esquema.onPrimaryContainer else esquema.onSurface,
-            modifier = Modifier.weight(1f).padding(top = 2.dp),
+            modifier = Modifier.weight(1f).padding(top = Dimens.xxs),
         )
     }
 }
@@ -192,10 +194,10 @@ private fun PasoNumerado(numero: Int, texto: String, enContenedor: Boolean = fal
 @Composable
 private fun TarjetaModulo(modulo: ModuloAyuda, abierto: Boolean, onAlternar: () -> Unit, onIr: () -> Unit, modifier: Modifier) {
     Acordeon(modulo.titulo, modulo.icono, abierto, onAlternar, modifier) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             Bloque(Textos.Ayuda.QUE_HACE, modulo.queHace)
             Bloque(Textos.Ayuda.CUANDO, modulo.cuando)
-            Text(Textos.Ayuda.PASOS, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(Textos.Ayuda.PASOS, style = GtTexto.etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant)
             modulo.pasos.forEachIndexed { i, p -> PasoNumerado(i + 1, p) }
             if (modulo.destino != null) {
                 GtButton(Textos.Ayuda.IR, onIr, variante = GtButtonVariant.Tonal, icono = Icons.AutoMirrored.Outlined.ArrowForward)
@@ -207,8 +209,8 @@ private fun TarjetaModulo(modulo: ModuloAyuda, abierto: Boolean, onAlternar: () 
 @Composable
 private fun Bloque(titulo: String, texto: String) {
     Column {
-        Text(titulo, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(texto, style = MaterialTheme.typography.bodyLarge)
+        Text(titulo, style = GtTexto.etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(texto, style = GtTexto.cuerpo)
     }
 }
 
@@ -238,20 +240,20 @@ private fun Acordeon(
                 },
             ) {
                 Row(
-                    Modifier.heightIn(min = 64.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+                    Modifier.heightIn(min = Dimens.filaLista).padding(horizontal = Dimens.lg, vertical = Dimens.sm),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        Modifier.size(44.dp).clip(GtShapes.campo).background(esquema.secondaryContainer),
+                        Modifier.size(Dimens.circuloIcono).clip(GtShapes.campo).background(esquema.secondaryContainer),
                         contentAlignment = Alignment.Center,
                     ) { Icon(icono, null, tint = esquema.onSecondaryContainer) }
-                    Spacer(Modifier.width(12.dp))
-                    Text(titulo, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(Dimens.md))
+                    Text(titulo, style = GtTexto.tituloTarjeta, modifier = Modifier.weight(1f))
                     Icon(Icons.Outlined.ExpandMore, null, tint = esquema.primary, modifier = Modifier.rotate(giro))
                 }
             }
             if (abierto) {
-                Box(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) { contenido() }
+                Box(Modifier.padding(start = Dimens.lg, end = Dimens.lg, bottom = Dimens.lg)) { contenido() }
             }
         }
     }

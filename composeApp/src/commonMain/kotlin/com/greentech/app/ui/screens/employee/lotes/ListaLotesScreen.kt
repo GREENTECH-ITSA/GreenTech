@@ -21,8 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.AlReseleccionarPestana
+import com.greentech.app.ui.components.BotonLeyendaSalud
 import com.greentech.app.ui.components.EmptyState
 import com.greentech.app.ui.components.EstadoContenido
 import com.greentech.app.ui.components.FiltrosActivos
@@ -39,8 +39,10 @@ import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
 import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
 
 /**
@@ -66,11 +68,11 @@ fun ListaLotesScreen(estado: ListaLotesUiState, onEvent: (ListaLotesEvent) -> Un
                 ExtendedFloatingActionButton(
                     onClick = { onEvent(ListaLotesEvent.NuevoLote) },
                     icon = { Icon(Icons.Outlined.Add, null) },
-                    text = { Text(Textos.Lotes.NUEVO, style = MaterialTheme.typography.labelLarge) },
+                    text = { Text(Textos.Lotes.NUEVO, style = GtTexto.boton) },
                     shape = GtShapes.campo,
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.heightIn(min = 60.dp),
+                    modifier = Modifier.heightIn(min = Dimens.botonAlto),
                 )
             }
         },
@@ -111,17 +113,19 @@ fun ListaLotesScreen(estado: ListaLotesUiState, onEvent: (ListaLotesEvent) -> Un
                         modifier = Modifier.fillMaxSize(),
                         state = lista,
                         contentPadding = PaddingValues(
-                            start = 20.dp, end = 20.dp,
+                            start = Dimens.margenLateral, end = Dimens.margenLateral,
                             // Espacio para el FAB y la barra inferior flotante.
-                            bottom = padding.calculateBottomPadding() + 88.dp,
+                            bottom = padding.calculateBottomPadding() + Dimens.espacioFab,
                         ),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.md),
                     ) {
                         item(key = "conteo") {
                             FiltrosActivos(
                                 resultados = textoConteo(filtrados.size, Textos.Lotes.RESULTADO, Textos.Lotes.RESULTADOS),
                                 filtrosActivos = estado.filtrosActivos,
                                 onLimpiar = { onEvent(ListaLotesEvent.QuitarFiltros) },
+                                // La salud aparece en cada tarjeta: su leyenda queda a un toque.
+                                accion = { BotonLeyendaSalud() },
                             )
                         }
                         itemsIndexed(filtrados, key = { _, lote -> lote.id }) { i, lote ->
@@ -140,12 +144,12 @@ fun ListaLotesScreen(estado: ListaLotesUiState, onEvent: (ListaLotesEvent) -> Un
 
 @Composable
 private fun FiltrosLotes(estado: ListaLotesUiState, onEvent: (ListaLotesEvent) -> Unit) {
-    Column(Modifier.padding(bottom = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(bottom = Dimens.xs), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
         GtBuscador(
             valor = estado.busqueda,
             onValorChange = { onEvent(ListaLotesEvent.Buscar(it)) },
             placeholder = Textos.Lotes.BUSCAR,
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = Dimens.margenLateral),
         )
         GtChipFiltro(
             opciones = estado.especies,

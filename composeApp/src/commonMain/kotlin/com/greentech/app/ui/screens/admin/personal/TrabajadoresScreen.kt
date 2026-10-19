@@ -15,22 +15,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Badge
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.PersonOff
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.SearchOff
-import com.greentech.app.ui.components.AlReseleccionarPestana
-import com.greentech.app.ui.components.ConfirmSheet
-import com.greentech.app.ui.components.ResumenConfirmacion
-import com.greentech.app.ui.components.ResumenFila
-import com.greentech.app.ui.strings.conValores
-import com.greentech.app.util.FechasUi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +33,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.AccionFab
+import com.greentech.app.ui.components.AlReseleccionarPestana
 import com.greentech.app.ui.components.ConfirmDialog
+import com.greentech.app.ui.components.ConfirmSheet
 import com.greentech.app.ui.components.EmptyState
 import com.greentech.app.ui.components.EstadoContenido
 import com.greentech.app.ui.components.GtBuscador
@@ -51,14 +47,20 @@ import com.greentech.app.ui.components.GtScaffold
 import com.greentech.app.ui.components.GtSegmentado
 import com.greentech.app.ui.components.GtTopBar
 import com.greentech.app.ui.components.IconosModulo
+import com.greentech.app.ui.components.ResumenConfirmacion
+import com.greentech.app.ui.components.ResumenFila
 import com.greentech.app.ui.components.StatusChip
 import com.greentech.app.ui.components.entradaEscalonada
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.strings.conValores
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
+import com.greentech.app.util.FechasUi
 import com.greentech.shared.domain.model.Usuario
 import com.greentech.shared.util.Fechas
 
@@ -74,12 +76,12 @@ fun TrabajadoresScreen(estado: TrabajadoresUiState, onEvent: (TrabajadoresEvent)
             GtFabMenu(listOf(AccionFab(Textos.Personal.AGREGAR, Icons.Outlined.PersonAddAlt) { onEvent(TrabajadoresEvent.Agregar) }))
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()), verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             GtBuscador(
                 valor = estado.busqueda,
                 onValorChange = { onEvent(TrabajadoresEvent.Buscar(it)) },
                 placeholder = Textos.Personal.BUSCAR,
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier = Modifier.padding(horizontal = Dimens.margenLateral),
             )
             GtSegmentado(
                 opciones = PestanaPersonal.entries,
@@ -91,7 +93,7 @@ fun TrabajadoresScreen(estado: TrabajadoresUiState, onEvent: (TrabajadoresEvent)
                         PestanaPersonal.INACTIVOS -> "${Textos.Personal.INACTIVOS} (${estado.totalInactivos})"
                     }
                 },
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier = Modifier.padding(horizontal = Dimens.margenLateral),
             )
             EstadoContenido(estado.trabajadores, onReintentar = { onEvent(TrabajadoresEvent.Entrar) }) {
                 val lista = estado.visibles
@@ -120,8 +122,8 @@ fun TrabajadoresScreen(estado: TrabajadoresUiState, onEvent: (TrabajadoresEvent)
                     else -> LazyColumn(
                         Modifier.fillMaxSize(),
                         state = listaEstado,
-                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = padding.calculateBottomPadding() + 96.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(start = Dimens.margenLateral, end = Dimens.margenLateral, top = Dimens.xs, bottom = padding.calculateBottomPadding() + Dimens.espacioFab),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.md),
                     ) {
                         itemsIndexed(lista, key = { _, u -> u.id }) { i, u ->
                             TarjetaTrabajador(
@@ -167,30 +169,30 @@ private fun TarjetaTrabajador(usuario: Usuario, esSesion: Boolean, onBaja: () ->
             ) {
                 Text(
                     usuario.iniciales,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = GtTexto.tituloTarjeta,
                     color = if (usuario.activo) esquema.onSecondaryContainer else esquema.onSurfaceVariant,
                 )
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(Dimens.md))
             Column(Modifier.weight(1f)) {
-                Text(usuario.nombre, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(usuario.correo, style = MaterialTheme.typography.bodySmall, color = esquema.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(usuario.nombre, style = GtTexto.tituloTarjeta, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(usuario.correo, style = GtTexto.ayuda, color = esquema.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        Spacer(Modifier.height(12.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Spacer(Modifier.height(Dimens.md))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.sm), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
             StatusChip(usuario.rol.etiqueta, GreenTechTheme.colors.primario, icono = Icons.Outlined.Badge)
             if (!usuario.activo) StatusChip(Textos.Personal.INACTIVO, GreenTechTheme.colors.neutro, icono = Icons.Outlined.PersonOff)
             if (esSesion) StatusChip(Textos.Personal.TU, GreenTechTheme.colors.info)
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Dimens.sm))
         Text(
             "${Textos.Personal.ALTA}: ${FechasUi.dia(usuario.fechaAlta)}",
-            style = MaterialTheme.typography.bodySmall,
+            style = GtTexto.ayuda,
             color = esquema.onSurfaceVariant,
         )
         if (!esSesion) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Dimens.md))
             GtButton(Textos.Personal.DAR_BAJA, onBaja, variante = GtButtonVariant.PeligroSecundario, icono = Icons.Outlined.PersonOff)
         }
     }

@@ -25,5 +25,13 @@ object GtShapes {
     val hoja = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
     /** Botones, chips y barra inferior flotante. */
     val pastilla = RoundedCornerShape(50)
+    /**
+     * Corte de hoja: la silueta de la hoja del logo (dos esquinas opuestas amplias y dos casi en punta).
+     * Detalle distintivo de GreenTech; se usa SOLO en el mosaico de saludo de Inicio, el resumen del
+     * Detalle del lote y la LoteCard destacada.
+     */
+    val hojaCorte = RoundedCornerShape(topStart = 32.dp, topEnd = 8.dp, bottomEnd = 32.dp, bottomStart = 8.dp)
+    /** Versión chica del corte de hoja para el ícono de la LoteCard destacada. */
+    val hojaCorteIcono = RoundedCornerShape(topStart = 20.dp, topEnd = 4.dp, bottomEnd = 20.dp, bottomStart = 4.dp)
     val circulo = CircleShape
 }

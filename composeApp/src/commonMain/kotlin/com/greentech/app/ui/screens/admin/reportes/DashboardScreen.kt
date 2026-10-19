@@ -2,52 +2,51 @@ package com.greentech.app.ui.screens.admin.reportes
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Percent
 import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.material.icons.outlined.TaskAlt
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import com.greentech.app.ui.components.BotonInfo
-import com.greentech.app.ui.components.InfoAyuda
-import com.greentech.app.util.FechasUi
-import com.greentech.shared.util.Fechas
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.minus
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.BentoGrid
 import com.greentech.app.ui.components.BentoSize
 import com.greentech.app.ui.components.BentoTile
+import com.greentech.app.ui.components.BotonInfo
 import com.greentech.app.ui.components.EmptyState
 import com.greentech.app.ui.components.ErrorState
 import com.greentech.app.ui.components.GtSegmentado
 import com.greentech.app.ui.components.IconosDominio
 import com.greentech.app.ui.components.IconosModulo
+import com.greentech.app.ui.components.InfoAyuda
 import com.greentech.app.ui.components.KpiTile
 import com.greentech.app.ui.components.NumeroAnimado
 import com.greentech.app.ui.components.SeveridadChip
 import com.greentech.app.ui.components.SkeletonBloque
+import com.greentech.app.ui.components.VacioMosaico
 import com.greentech.app.ui.components.anchoCompleto
 import com.greentech.app.ui.components.bento
 import com.greentech.app.ui.components.charts.BarChart
@@ -55,20 +54,26 @@ import com.greentech.app.ui.components.charts.HorizontalBarChart
 import com.greentech.app.ui.components.charts.SerieBarras
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
+import com.greentech.app.util.FechasUi
 import com.greentech.shared.domain.model.Anomalia
 import com.greentech.shared.domain.model.Dashboard
 import com.greentech.shared.domain.model.Indicador
 import com.greentech.shared.domain.model.MermaEspecie
 import com.greentech.shared.domain.model.Periodo
 import com.greentech.shared.domain.model.PuntoMensual
+import com.greentech.shared.util.Fechas
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.minus
 
 /** Dashboard independiente (bento con selector de periodo). En la app se muestra dentro de AdminHomeScreen. */
 @Composable
 fun DashboardScreen(estado: DashboardUiState, onEvent: (DashboardEvent) -> Unit, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) { onEvent(DashboardEvent.Entrar) }
-    BentoGrid(modifier, contentPadding = PaddingValues(20.dp)) {
+    BentoGrid(modifier, contentPadding = PaddingValues(Dimens.lgx)) {
         dashboardBento(estado, onEvent, onAuditoria = null)
     }
 }
@@ -87,14 +92,14 @@ fun LazyGridScope.dashboardBento(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 Textos.Dashboard.INDICADORES,
-                style = MaterialTheme.typography.titleMedium,
+                style = GtTexto.tituloTarjeta,
                 modifier = Modifier.weight(1f).semantics { heading() },
             )
             BotonInfo(InfoAyuda(Textos.Dashboard.INDICADORES, Textos.Dashboard.INFO_INDICADORES), onAyuda)
         }
     }
     anchoCompleto("periodo") {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
             GtSegmentado(
                 opciones = Periodo.entries,
                 seleccionado = estado.periodo,
@@ -105,7 +110,7 @@ fun LazyGridScope.dashboardBento(
             val hoy = Fechas.hoy()
             Text(
                 FechasUi.rango(hoy.minus(estado.periodo.dias - 1, DateTimeUnit.DAY), hoy),
-                style = MaterialTheme.typography.bodyMedium,
+                style = GtTexto.ayuda,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
                 textAlign = TextAlign.Center,
@@ -114,8 +119,8 @@ fun LazyGridScope.dashboardBento(
     }
     when (val d = estado.dashboard) {
         EstadoCarga.Cargando -> {
-            repeat(4) { i -> bento(BentoSize.S, "skKpi$i") { SkeletonBloque(Modifier.fillMaxWidth().height(BentoSize.S.altoMinimo + 40.dp)) } }
-            bento(BentoSize.L, "skGrafica") { SkeletonBloque(Modifier.fillMaxWidth().height(BentoSize.L.altoMinimo + 60.dp)) }
+            repeat(4) { i -> bento(BentoSize.S, "skKpi$i") { SkeletonBloque(Modifier.fillMaxWidth().height(Dimens.skeletonKpi)) } }
+            bento(BentoSize.L, "skGrafica") { SkeletonBloque(Modifier.fillMaxWidth().height(Dimens.skeletonGrafica)) }
         }
         is EstadoCarga.Error -> anchoCompleto("error") { ErrorState(d.mensaje, { onEvent(DashboardEvent.Entrar) }) }
         is EstadoCarga.Listo -> if (d.datos.sinDatos) {
@@ -148,7 +153,7 @@ private fun LazyGridScope.contenido(d: Dashboard, onAuditoria: (() -> Unit)?, on
     bento(BentoSize.S, "kpiVendidas") {
         KpiTile(
             Textos.Dashboard.VENDIDAS, k.plantasVendidas.toDouble(), IconosModulo.salida,
-            tendencia = ventas,
+            tendencia = ventas, colorSerie = GreenTechTheme.colors.series.ventas,
             info = InfoAyuda(Textos.Dashboard.VENDIDAS, Textos.Dashboard.INFO_VENDIDAS), onVerAyuda = onAyuda,
         )
     }
@@ -156,7 +161,7 @@ private fun LazyGridScope.contenido(d: Dashboard, onAuditoria: (() -> Unit)?, on
         KpiTile(
             Textos.Dashboard.PORC_MERMA, k.porcentajeMerma, Icons.Outlined.Percent,
             decimales = 1, sufijo = " %", tendencia = porcMerma,
-            mejorSiSube = false, colorSerie = GreenTechTheme.colors.warning,
+            mejorSiSube = false, colorSerie = GreenTechTheme.colors.series.merma,
             info = InfoAyuda(Textos.Dashboard.PORC_MERMA, Textos.Dashboard.INFO_MERMA), onVerAyuda = onAyuda,
         )
     }
@@ -172,7 +177,7 @@ private fun LazyGridScope.contenido(d: Dashboard, onAuditoria: (() -> Unit)?, on
                 onClick = onAuditoria,
                 contexto = Textos.Dashboard.AUDITORIA_DESC,
             ) {
-                Text(Textos.Auditoria.SUBTITULO, style = MaterialTheme.typography.titleMedium)
+                Text(Textos.Auditoria.SUBTITULO, style = GtTexto.tituloTarjeta)
             }
         }
     }
@@ -184,8 +189,8 @@ private fun MosaicoVentasMerma(meses: List<PuntoMensual>) {
         BarChart(
             etiquetas = meses.map(PuntoMensual::mes),
             series = listOf(
-                SerieBarras(Textos.Dashboard.VENTAS, MaterialTheme.colorScheme.primary, meses.map(PuntoMensual::ventas)),
-                SerieBarras(Textos.Dashboard.MERMA, GreenTechTheme.colors.warning, meses.map(PuntoMensual::merma)),
+                SerieBarras(Textos.Dashboard.VENTAS, GreenTechTheme.colors.series.ventas, meses.map(PuntoMensual::ventas)),
+                SerieBarras(Textos.Dashboard.MERMA, GreenTechTheme.colors.series.merma, meses.map(PuntoMensual::merma)),
             ),
             descripcion = Textos.Dashboard.GRAFICA_BARRAS,
         )
@@ -196,11 +201,11 @@ private fun MosaicoVentasMerma(meses: List<PuntoMensual>) {
 private fun MosaicoMermaEspecie(datos: List<MermaEspecie>) {
     BentoTile(BentoSize.L, etiqueta = Textos.Dashboard.MERMA_ESPECIE, icono = IconosModulo.merma, contexto = Textos.Dashboard.MERMA_DESC) {
         if (datos.isEmpty()) {
-            Text(Textos.Dashboard.SIN_MERMA, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            VacioMosaico(Icons.Outlined.TaskAlt, Textos.Dashboard.SIN_MERMA, colorIcono = GreenTechTheme.colors.success)
         } else {
             HorizontalBarChart(
                 datos = datos.sortedByDescending { it.cantidad }.map { it.especie to it.cantidad },
-                color = GreenTechTheme.colors.warning,
+                color = GreenTechTheme.colors.series.merma,
                 descripcion = Textos.Dashboard.GRAFICA_ESPECIES,
             )
         }
@@ -211,27 +216,23 @@ private fun MosaicoMermaEspecie(datos: List<MermaEspecie>) {
 private fun MosaicoAnomalias(anomalias: List<Anomalia>) {
     BentoTile(BentoSize.M, etiqueta = Textos.Dashboard.ANOMALIAS, icono = IconosModulo.anomalia) {
         if (anomalias.isEmpty()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.material3.Icon(Icons.Outlined.TaskAlt, null, tint = GreenTechTheme.colors.success)
-                Spacer(Modifier.width(8.dp))
-                Text(Textos.Dashboard.SIN_ANOMALIAS, style = MaterialTheme.typography.titleMedium)
-            }
+            VacioMosaico(Icons.Outlined.TaskAlt, Textos.Dashboard.SIN_ANOMALIAS, colorIcono = GreenTechTheme.colors.success)
         } else {
-            NumeroAnimado(anomalias.size.toDouble(), MaterialTheme.typography.displaySmall)
-            Spacer(Modifier.height(8.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            NumeroAnimado(anomalias.size.toDouble(), GtTexto.dato)
+            Spacer(Modifier.height(Dimens.sm))
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                 anomalias.take(3).forEach { a ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        androidx.compose.material3.Icon(
+                        Icon(
                             IconosDominio.anomalia(a.tipo), null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(Dimens.iconoChico),
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(Dimens.sm))
                         Column(Modifier.weight(1f)) {
-                            Text("${a.tipo.etiqueta}: ${a.nombre}", style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("${a.tipo.etiqueta}: ${a.nombre}", style = GtTexto.tituloTarjeta, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             Text(
                                 "${a.especie} · ${a.loteCodigo}",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = GtTexto.ayuda,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                             )

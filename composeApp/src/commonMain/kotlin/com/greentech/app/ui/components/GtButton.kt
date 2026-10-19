@@ -37,6 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 
 enum class GtButtonVariant { Primario, Tonal, Secundario, Texto, Peligro, PeligroSecundario }
@@ -48,6 +50,8 @@ private enum class EstadoBoton { Normal, Cargando, Exito }
  * a todo el ancho por defecto, con ícono + texto.
  *
  * - Al presionar se escala a 0.97 y los botones rellenos pasan de pill a 16 dp (shape morph con resorte).
+ * - Estados: presionado (escala + morph), deshabilitado (surfaceContainerHigh + onSurfaceVariant),
+ *   foco (anillo azul agua de 3 dp, ver [anilloFoco]), cargando y éxito.
  * - [cargando] muestra el LoadingIndicator expresivo; [exito] dibuja un check animado (tras guardar).
  */
 @Composable
@@ -63,7 +67,7 @@ fun GtButton(
 ) {
     val interaccion = remember { MutableInteractionSource() }
     val presionado by interaccion.collectIsPressedAsState()
-    val alto = if (variante == GtButtonVariant.Texto) 56.dp else 60.dp
+    val alto = if (variante == GtButtonVariant.Texto) Dimens.tactilMin else Dimens.botonAlto
     val relleno = variante == GtButtonVariant.Primario || variante == GtButtonVariant.Peligro || variante == GtButtonVariant.Tonal
     val radio by animateDpAsState(
         targetValue = if (presionado && relleno) 16.dp else alto / 2,
@@ -108,6 +112,7 @@ fun GtButton(
         modifier = modifier
             .heightIn(min = alto)
             .efectoPresion(interaccion)
+            .anilloFoco(interaccion, forma)
             .semantics {
                 when (estadoVisual) {
                     EstadoBoton.Cargando -> stateDescription = Textos.Comun.CARGANDO
@@ -120,7 +125,7 @@ fun GtButton(
         colors = coloresVisibles,
         border = borde,
         elevation = null,
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+        contentPadding = PaddingValues(horizontal = Dimens.xl, vertical = Dimens.md),
         interactionSource = interaccion,
     ) {
         AnimatedContent(
@@ -131,21 +136,21 @@ fun GtButton(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                 when (estado) {
                     EstadoBoton.Cargando -> {
-                        GtCargando(tamano = 28.dp, color = LocalContentColor.current)
-                        Spacer(Modifier.width(10.dp))
+                        GtCargando(tamano = Dimens.iconoMediano, color = LocalContentColor.current)
+                        Spacer(Modifier.width(Dimens.sm))
                     }
                     EstadoBoton.Exito -> {
-                        CheckAnimado(Modifier.size(24.dp), color = LocalContentColor.current)
-                        Spacer(Modifier.width(8.dp))
+                        CheckAnimado(Modifier.size(Dimens.icono), color = LocalContentColor.current)
+                        Spacer(Modifier.width(Dimens.sm))
                     }
                     EstadoBoton.Normal -> if (icono != null) {
-                        Icon(icono, contentDescription = null, modifier = Modifier.size(24.dp))
-                        Spacer(Modifier.width(8.dp))
+                        Icon(icono, contentDescription = null, modifier = Modifier.size(Dimens.icono))
+                        Spacer(Modifier.width(Dimens.sm))
                     }
                 }
                 Text(
                     if (estado == EstadoBoton.Exito) Textos.Disenio.GUARDADO else texto,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = GtTexto.boton,
                     textAlign = TextAlign.Center,
                 )
             }

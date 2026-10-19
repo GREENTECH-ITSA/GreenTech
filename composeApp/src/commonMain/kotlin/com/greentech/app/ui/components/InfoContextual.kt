@@ -29,7 +29,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 
 /** Explicación breve (2–3 líneas) de una sección o un indicador. */
 data class InfoAyuda(val titulo: String, val texto: String)
@@ -46,7 +48,7 @@ fun BotonInfo(
     color: Color = MaterialTheme.colorScheme.primary,
 ) {
     var abierto by rememberSaveable(info.titulo) { mutableStateOf(false) }
-    IconButton(onClick = { abierto = true }, modifier = modifier.size(56.dp)) {
+    IconButton(onClick = { abierto = true }, modifier = modifier.size(Dimens.tactilMin)) {
         Icon(Icons.Outlined.Info, contentDescription = "${Textos.Comun.MAS_INFO}: ${info.titulo}", tint = color)
     }
     if (abierto) {
@@ -66,16 +68,16 @@ fun BotonInfo(
 @Composable
 fun HojaInfo(info: InfoAyuda, onCerrar: () -> Unit, onVerAyuda: (() -> Unit)?) {
     GtBottomSheet(onCerrar = onCerrar) {
-        Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(start = Dimens.xl, end = Dimens.xl, bottom = Dimens.xl), verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(48.dp).clip(GtShapes.circulo).background(MaterialTheme.colorScheme.primaryContainer),
+                    Modifier.size(Dimens.iconoLote).clip(GtShapes.circulo).background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) }
-                Spacer(Modifier.width(12.dp))
-                Text(info.titulo, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f).semantics { heading() })
+                Spacer(Modifier.width(Dimens.md))
+                Text(info.titulo, style = GtTexto.tituloTarjeta, modifier = Modifier.weight(1f).semantics { heading() })
             }
-            Text(info.texto, style = MaterialTheme.typography.bodyLarge)
+            Text(info.texto, style = GtTexto.cuerpo)
             GtButton(Textos.Comun.ENTENDIDO, onCerrar, variante = GtButtonVariant.Tonal)
             if (onVerAyuda != null) {
                 GtButton(

@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.greentech.app.ui.components.FormularioScaffold
 import com.greentech.app.ui.components.GtChipGroup
 import com.greentech.app.ui.components.GtDatePicker
@@ -25,7 +24,9 @@ import com.greentech.app.ui.components.SeccionFormulario
 import com.greentech.app.ui.components.obligatorio
 import com.greentech.app.ui.preview.DatosPreview
 import com.greentech.app.ui.strings.Textos
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GreenTechTheme
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.ThemeMode
 
 /** Registrar lote: secciones agrupadas, stepper grande y botón fijo abajo sobre vidrio. */
@@ -69,7 +70,7 @@ fun RegistrarLoteScreen(estado: RegistrarLoteUiState, onEvent: (RegistrarLoteEve
             if (estado.zonaSugerida != null && estado.zona == estado.zonaSugerida) {
                 Text(
                     Textos.RegistrarLote.ZONA_AYUDA,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = GtTexto.ayuda,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -93,8 +94,8 @@ fun RegistrarLoteScreen(estado: RegistrarLoteUiState, onEvent: (RegistrarLoteEve
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Person, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.width(12.dp))
-                Text("${Textos.Comun.RESPONSABLE}: ${estado.responsable}", style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.width(Dimens.md))
+                Text("${Textos.Comun.RESPONSABLE}: ${estado.responsable}", style = GtTexto.ayuda)
             }
         }
     }

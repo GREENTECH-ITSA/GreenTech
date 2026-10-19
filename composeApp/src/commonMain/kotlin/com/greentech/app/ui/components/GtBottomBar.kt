@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -30,8 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -41,11 +39,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.greentech.app.ui.theme.Dimens
 import com.greentech.app.ui.theme.GtShapes
+import com.greentech.app.ui.theme.GtTexto
 import com.greentech.app.ui.theme.Motion
 
 /**
@@ -93,7 +95,7 @@ fun GtBottomBar(
         modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+            .padding(start = Dimens.lg, end = Dimens.lg, bottom = Dimens.md),
         contentAlignment = Alignment.BottomCenter,
     ) {
         GlassSurface(
@@ -101,7 +103,7 @@ fun GtBottomBar(
             shape = GtShapes.pastilla,
             elevada = true,
         ) {
-            BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 6.dp)) {
+            BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = Dimens.sm)) {
                 val anchoItem = maxWidth / items.size.coerceAtLeast(1)
                 val desplazamiento by animateDpAsState(
                     anchoItem * seleccionado.coerceAtLeast(0),
@@ -114,7 +116,7 @@ fun GtBottomBar(
                             .offset(x = desplazamiento)
                             .width(anchoItem)
                             .fillMaxHeight()
-                            .padding(vertical = 6.dp, horizontal = 2.dp)
+                            .padding(vertical = Dimens.sm, horizontal = Dimens.xxs)
                             .clip(GtShapes.pastilla)
                             .background(MaterialTheme.colorScheme.secondaryContainer),
                     )
@@ -163,20 +165,20 @@ private fun ItemBarra(item: GtBottomItem, seleccionado: Boolean, onClick: () -> 
         Crossfade(seleccionado, animationSpec = Motion.tween(150), label = "iconoBarra") { activo ->
             if (item.destacado && !activo) {
                 Box(
-                    Modifier.size(width = 48.dp, height = 30.dp).clip(GtShapes.pastilla)
+                    Modifier.size(width = Dimens.xxxl, height = Dimens.xxl).clip(GtShapes.pastilla)
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(item.icono, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(24.dp))
+                    Icon(item.icono, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(Dimens.icono))
                 }
             } else {
-                // Misma caja de 30 dp que el ícono destacado: todas las etiquetas quedan alineadas.
-                Box(Modifier.height(30.dp), contentAlignment = Alignment.Center) {
+                // Misma caja de 32 dp que el ícono destacado: todas las etiquetas quedan alineadas.
+                Box(Modifier.height(Dimens.xxl), contentAlignment = Alignment.Center) {
                     Icon(
                         if (activo) item.iconoSeleccionado else item.icono,
                         contentDescription = null,
                         tint = color,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(Dimens.icono),
                     )
                 }
             }
@@ -186,9 +188,9 @@ private fun ItemBarra(item: GtBottomItem, seleccionado: Boolean, onClick: () -> 
         CompositionLocalProvider(LocalDensity provides Density(densidad.density, densidad.fontScale.coerceAtMost(1.3f))) {
             TextoAjustable(
                 item.etiqueta,
-                MaterialTheme.typography.labelMedium,
+                GtTexto.etiqueta,
                 color = color,
-                modifier = Modifier.padding(top = 2.dp, start = 2.dp, end = 2.dp),
+                modifier = Modifier.padding(top = Dimens.xxs, start = Dimens.xxs, end = Dimens.xxs),
             )
         }
     }
