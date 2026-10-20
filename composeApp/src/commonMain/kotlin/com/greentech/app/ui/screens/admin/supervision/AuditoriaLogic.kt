@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.admin.supervision
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -9,11 +10,15 @@ import com.greentech.shared.domain.model.Auditoria
 import com.greentech.shared.domain.model.TipoAuditoria
 import com.greentech.shared.domain.usecase.ObtenerAuditoriaUseCase
 
+@Immutable
 data class AuditoriaUiState(
     val registros: EstadoCarga<List<Auditoria>> = EstadoCarga.Cargando,
     val tipo: TipoAuditoria? = null,
 ) {
-    val filtrados: List<Auditoria> get() = registros.datosOrNull.orEmpty().filter { tipo == null || it.tipo == tipo }
+    // Se calcula una sola vez por estado (los estados son inmutables), no en cada recomposición.
+    val filtrados: List<Auditoria> by lazy(LazyThreadSafetyMode.NONE) {
+        registros.datosOrNull.orEmpty().filter { tipo == null || it.tipo == tipo }
+    }
 }
 
 sealed interface AuditoriaEvent {

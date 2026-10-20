@@ -112,12 +112,12 @@ fun BitacoraScreen(estado: BitacoraUiState, onEvent: (BitacoraEvent) -> Unit) {
 private fun LineaDeTiempo(lista: List<EventoBitacora>, contentPadding: PaddingValues, encabezado: @Composable () -> Unit) {
     val grupos = remember(lista) { lista.sortedByDescending { it.fecha }.groupBy { it.fecha.date } }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = contentPadding) {
-        item(key = "conteo") { encabezado() }
+        item(key = "conteo", contentType = "conteo") { encabezado() }
         var indiceGlobal = 0
         grupos.forEach { (fecha, eventos) ->
             stickyHeader(key = "fecha-$fecha") { SeparadorFecha(fecha) }
             val base = indiceGlobal
-            itemsIndexed(eventos, key = { _, e -> e.id }) { i, e ->
+            itemsIndexed(eventos, key = { _, e -> e.id }, contentType = { _, _ -> "eventos" }) { i, e ->
                 TimelineItem(
                     evento = e,
                     esUltimo = i == eventos.lastIndex,

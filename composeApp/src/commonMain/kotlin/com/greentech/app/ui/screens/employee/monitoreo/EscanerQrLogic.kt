@@ -1,5 +1,7 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.runtime.Immutable
+import com.greentech.app.ui.core.IndiceLotesLocal
 import com.greentech.shared.domain.model.Lote
 import com.greentech.app.platform.Medicion
 import com.greentech.app.navigation.AppDestination
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.time.TimeSource
 
+@Immutable
 data class EscanerQrUiState(
     val linterna: Boolean = false,
     val mostrarManual: Boolean = false,
@@ -46,6 +49,7 @@ sealed interface EscanerQrEvent {
 class EscanerQrLogic(
     private val camara: CameraScanner,
     private val buscarLote: BuscarLotePorCodigoUseCase,
+    private val indice: IndiceLotesLocal,
 ) : BaseLogic<EscanerQrUiState, EscanerQrEvent>(EscanerQrUiState(camaraReal = camara.disponible)) {
 
     /** Último QR desconocido: no se vuelve a avisar mientras siga frente a la cámara. */
@@ -131,11 +135,18 @@ class EscanerQrLogic(
         }
     }
 
-    /** T0 (código leído o confirmado) → T1 (el repositorio devuelve el lote). T2 lo marca el Detalle. */
+    /**
+     * T0 (código leído o confirmado) → T1 (se tiene el lote). T2 lo marca el Detalle.
+     * Local primero: el índice responde sin red; solo si el lote no está se consulta el repositorio.
+     */
     private suspend fun buscarMedido(codigo: String): AppResult<Lote> {
         Medicion.iniciar(Medicion.QR_CONSULTA)
         Medicion.iniciar(Medicion.QR_BUSQUEDA)
-        return buscarLote(codigo).also { Medicion.terminar(Medicion.QR_BUSQUEDA) }
+        val local = indice.buscarPorCodigo(LoteValidator.normalizarCodigo(codigo))
+        val r = if (local != null) AppResult.Exito(local) else buscarLote(codigo)
+        if (r is AppResult.Exito) indice.recordar(r.datos)
+        Medicion.terminar(Medicion.QR_BUSQUEDA)
+        return r
     }
 
     override fun onCleared() {

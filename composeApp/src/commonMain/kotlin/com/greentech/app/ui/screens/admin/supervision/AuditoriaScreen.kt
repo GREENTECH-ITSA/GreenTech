@@ -98,14 +98,14 @@ fun AuditoriaScreen(estado: AuditoriaUiState, onEvent: (AuditoriaEvent) -> Unit)
                         contentPadding = PaddingValues(start = Dimens.margenLateral, end = Dimens.margenLateral, bottom = padding.calculateBottomPadding() + Dimens.xl),
                         verticalArrangement = Arrangement.spacedBy(Dimens.sm),
                     ) {
-                        item(key = "conteo") {
+                        item(key = "conteo", contentType = "conteo") {
                             FiltrosActivos(
                                 resultados = textoConteo(lista.size, Textos.Bitacora.REGISTRO, Textos.Bitacora.REGISTROS),
                                 filtrosActivos = if (estado.tipo != null) 1 else 0,
                                 onLimpiar = limpiar,
                             )
                         }
-                        itemsIndexed(lista, key = { _, a -> a.id }) { i, a ->
+                        itemsIndexed(lista, key = { _, a -> a.id }, contentType = { _, _ -> "lista" }) { i, a ->
                             TarjetaAuditoria(a, Modifier.animateItem().entradaEscalonada(i))
                         }
                     }

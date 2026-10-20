@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.admin.reportes
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
 import com.greentech.app.ui.core.aEstadoCarga
@@ -7,6 +8,7 @@ import com.greentech.shared.domain.model.Dashboard
 import com.greentech.shared.domain.model.Periodo
 import com.greentech.shared.domain.usecase.ObtenerDashboardUseCase
 
+@Immutable
 data class DashboardUiState(
     val periodo: Periodo = Periodo.MES,
     val dashboard: EstadoCarga<Dashboard> = EstadoCarga.Cargando,

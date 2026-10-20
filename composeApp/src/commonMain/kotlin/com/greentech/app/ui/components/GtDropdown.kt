@@ -101,7 +101,7 @@ fun <T> GtDropdown(
                 )
             }
             LazyColumn(Modifier.fillMaxWidth().padding(horizontal = Dimens.md).padding(bottom = Dimens.xl)) {
-                items(filtradas, key = { textoOpcion(it) }) { op ->
+                items(filtradas, key = { textoOpcion(it) }, contentType = { "opcion" }) { op ->
                     val elegido = op == seleccionado
                     Surface(
                         onClick = { onSeleccion(op); abierto = false },

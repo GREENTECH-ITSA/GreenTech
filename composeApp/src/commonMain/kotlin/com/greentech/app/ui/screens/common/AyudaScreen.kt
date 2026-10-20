@@ -79,23 +79,23 @@ fun AyudaScreen(estado: AyudaUiState, onEvent: (AyudaEvent) -> Unit) {
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
-            item(key = "encabezado") { Encabezado() }
+            item(key = "encabezado", contentType = "encabezado") { Encabezado() }
             if (estado.mostrarPrimerosPasos) {
-                item(key = "intro") {
+                item(key = "intro", contentType = "intro") {
                     GtButton(
                         Textos.Ayuda.VER_INTRO, { intro.abrir() },
                         variante = GtButtonVariant.Tonal, icono = Icons.Outlined.AutoStories,
                     )
                 }
             }
-            item(key = "buscar") {
+            item(key = "buscar", contentType = "buscar") {
                 GtBuscador(estado.busqueda, { onEvent(AyudaEvent.Buscar(it)) }, placeholder = Textos.Ayuda.BUSCAR)
             }
             if (estado.mostrarPrimerosPasos) {
-                item(key = "primeros") { PrimerosPasos(estado.contenido.primerosPasos) }
+                item(key = "primeros", contentType = "primeros") { PrimerosPasos(estado.contenido.primerosPasos) }
             }
             if (estado.sinResultados) {
-                item(key = "vacio") {
+                item(key = "vacio", contentType = "vacio") {
                     EmptyState(
                         Icons.Outlined.SearchOff,
                         Textos.Ayuda.SIN_RESULTADOS.conValores(estado.busqueda.trim()),
@@ -107,8 +107,8 @@ fun AyudaScreen(estado: AyudaUiState, onEvent: (AyudaEvent) -> Unit) {
                 }
             }
             if (estado.modulos.isNotEmpty()) {
-                item(key = "tituloModulos") { SectionHeader(Textos.Ayuda.MODULOS) }
-                items(estado.modulos, key = { "m-${it.id}" }) { m ->
+                item(key = "tituloModulos", contentType = "tituloModulos") { SectionHeader(Textos.Ayuda.MODULOS) }
+                items(estado.modulos, key = { "m-${it.id}" }, contentType = { "modulos" }) { m ->
                     TarjetaModulo(
                         modulo = m,
                         abierto = m.id in estado.expandidos || estado.busqueda.isNotBlank(),
@@ -119,8 +119,8 @@ fun AyudaScreen(estado: AyudaUiState, onEvent: (AyudaEvent) -> Unit) {
                 }
             }
             if (estado.preguntas.isNotEmpty()) {
-                item(key = "tituloFaq") { SectionHeader(Textos.Ayuda.FAQ) }
-                items(estado.preguntas, key = { "q-${it.id}" }) { p ->
+                item(key = "tituloFaq", contentType = "tituloFaq") { SectionHeader(Textos.Ayuda.FAQ) }
+                items(estado.preguntas, key = { "q-${it.id}" }, contentType = { "preguntas" }) { p ->
                     Acordeon(
                         titulo = p.pregunta,
                         icono = IconosModulo.ayuda,

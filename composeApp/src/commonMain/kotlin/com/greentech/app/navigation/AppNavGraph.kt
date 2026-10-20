@@ -1,5 +1,21 @@
 package com.greentech.app.navigation
 
+import com.greentech.app.platform.FijarVerticalEnTelefono
+import com.greentech.app.ui.core.UiEffect
+import com.greentech.app.ui.components.EmptyState
+import com.greentech.app.ui.components.GtNavigationRail
+import com.greentech.app.ui.components.claseAncho
+import com.greentech.app.ui.components.ClaseAncho
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.key
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.LaunchedEffect
 import com.greentech.app.platform.Medicion
 import com.greentech.app.platform.AnotarPantalla
@@ -202,7 +218,9 @@ private fun NavGraphBuilder.pantallasEmpleado(navegador: Navegador) {
         Conectar(koinViewModel<EmployeeHomeLogic>(), navegador) { s, on -> EmployeeHomeScreen(s, on) }
     }
     composable<AppDestination.ListaLotes> {
-        Conectar(koinViewModel<ListaLotesLogic>(), navegador) { s, on -> ListaLotesScreen(s, on) }
+        ListaConDetalle(navegador, soloLectura = false) { nav ->
+            Conectar(koinViewModel<ListaLotesLogic>(), nav) { s, on -> ListaLotesScreen(s, on) }
+        }
     }
     composable<AppDestination.RegistrarLote> {
         Conectar(koinViewModel<RegistrarLoteLogic>(), navegador) { s, on -> RegistrarLoteScreen(s, on) }
@@ -214,6 +232,7 @@ private fun NavGraphBuilder.pantallasEmpleado(navegador: Navegador) {
     composable<AppDestination.EscanerQr> {
         val camara = koinInject<CameraScanner>()
         LaunchedEffect(Unit) { Medicion.iniciar(Medicion.QR_ABRIR_A_DETALLE) }
+        FijarVerticalEnTelefono()
         Conectar(koinViewModel<EscanerQrLogic>(), navegador) { s, on ->
             EscanerQrScreen(s, on, vistaCamara = { VistaCamara(camara, it) })
         }
@@ -332,7 +351,9 @@ private fun NavGraphBuilder.pantallasAdministrador(navegador: Navegador) {
         Conectar(koinViewModel<AltaTrabajadorLogic>(), navegador) { s, on -> AltaTrabajadorScreen(s, on) }
     }
     composable<AppDestination.SupervisionLotes> {
-        Conectar(koinViewModel<LotesLogic>(), navegador) { s, on -> LotesScreen(s, on) }
+        ListaConDetalle(navegador, soloLectura = true) { nav ->
+            Conectar(koinViewModel<LotesLogic>(), nav) { s, on -> LotesScreen(s, on) }
+        }
     }
     composable<AppDestination.Auditoria> {
         Conectar(koinViewModel<AuditoriaLogic>(), navegador) { s, on -> AuditoriaScreen(s, on) }
@@ -373,10 +394,23 @@ private fun PanelConBarra(
     val indice = pestanas.indexOfFirst { destino.esRuta(it) }
     AnotarPantalla(destino?.route?.substringAfterLast('.')?.substringBefore('/')?.substringBefore('?'))
     val haze = rememberHazeState()
-    // Se pasa el State (no el valor): el contenido solo vuelve a hacer layout mientras se anima.
-    val espacio = animateDpAsState(if (indice >= 0) EspacioBarraInferior else 0.dp, Motion.media(), label = "espacioBarra")
     // Tocar la pestaña activa no navega: la pantalla vuelve al inicio de su lista.
     var reselecciones by remember { mutableIntStateOf(0) }
+    val alSeleccionar: (Int) -> Unit = { if (it == indice) reselecciones++ else navegador.irAPestana(pestanas[it]) }
+    // Ventanas medianas y expandidas (plegables, tablets, horizontal): Navigation Rail a la izquierda.
+    if (claseAncho() != ClaseAncho.COMPACTO) {
+        Row(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            GtNavigationRail(items, seleccionado = indice, onSeleccion = alSeleccionar)
+            Box(Modifier.weight(1f).fillMaxHeight().consumeWindowInsets(WindowInsets.safeDrawing.only(WindowInsetsSides.Start))) {
+                CompositionLocalProvider(LocalReseleccionPestana provides reselecciones) {
+                    contenido(Modifier.fillMaxSize().fuenteVidrio(haze))
+                }
+            }
+        }
+        return
+    }
+    // Se pasa el State (no el valor): el contenido solo vuelve a hacer layout mientras se anima.
+    val espacio = animateDpAsState(if (indice >= 0) EspacioBarraInferior else 0.dp, Motion.media(), label = "espacioBarra")
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         CompositionLocalProvider(LocalEspacioInferior provides espacio, LocalReseleccionPestana provides reselecciones) {
             contenido(Modifier.fillMaxSize().fuenteVidrio(haze))
@@ -388,11 +422,51 @@ private fun PanelConBarra(
             exit = slideOutVertically(Motion.media()) { it } + fadeOut(Motion.rapida()),
         ) {
             CompositionLocalProvider(LocalHazeState provides haze) {
-                GtBottomBar(
-                    items,
-                    seleccionado = indice,
-                    onSeleccion = { if (it == indice) reselecciones++ else navegador.irAPestana(pestanas[it]) },
+                GtBottomBar(items, seleccionado = indice, onSeleccion = alSeleccionar)
+            }
+        }
+    }
+}
+
+/**
+ * Lista de lotes con su detalle al lado en ventanas expandidas (tablets, plegables abiertos en horizontal).
+ * Elegir un lote lo muestra a la derecha en vez de navegar; "volver" en el detalle lo cierra. En ventanas
+ * compactas y medianas la lista navega al detalle como siempre.
+ */
+@Composable
+private fun ListaConDetalle(navegador: Navegador, soloLectura: Boolean, lista: @Composable (Navegador) -> Unit) {
+    if (claseAncho() != ClaseAncho.EXPANDIDO) {
+        lista(navegador)
+        return
+    }
+    var seleccionado by rememberSaveable { mutableStateOf<String?>(null) }
+    val navLista = remember(navegador) {
+        navegador.interceptando { e ->
+            val destino = (e as? UiEffect.Navegar)?.destino as? AppDestination.DetalleLote
+            if (destino != null) seleccionado = destino.loteId
+            destino != null
+        }
+    }
+    val navDetalle = remember(navegador) {
+        navegador.interceptando { e -> (e == UiEffect.Volver).also { if (it) seleccionado = null } }
+    }
+    Row(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(0.42f).fillMaxHeight()) { lista(navLista) }
+        Box(Modifier.weight(0.58f).fillMaxHeight()) {
+            val id = seleccionado
+            if (id == null) {
+                EmptyState(
+                    icono = IconosModulo.lote,
+                    titulo = Textos.Lotes.ELIGE_LOTE_TITULO,
+                    mensaje = Textos.Lotes.ELIGE_LOTE_MENSAJE,
+                    modifier = Modifier.align(Alignment.Center),
                 )
+            } else {
+                key(id) {
+                    Conectar(koinViewModel<DetalleLoteLogic>(key = "detalle-$id") { parametersOf(id, soloLectura) }, navDetalle) { s, on ->
+                        DetalleLoteScreen(s, on)
+                    }
+                }
             }
         }
     }

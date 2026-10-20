@@ -40,13 +40,23 @@ fun MacrobenchmarkScope.esperarLogin() {
     esperar(By.text("Iniciar sesión"), 15_000)
 }
 
+/** Cierra el teclado si está abierto (el botón de enviar puede quedar debajo y UiAutomator no lo ve). */
+fun MacrobenchmarkScope.ocultarTeclado() {
+    val ime = device.executeShellCommand("dumpsys input_method")
+    if (ime.contains("mInputShown=true") || ime.contains("isInputViewShown=true")) {
+        device.pressBack()
+        device.waitForIdle()
+    }
+}
+
 /** Escribe las credenciales y entra. Cierra la introducción de primer uso y el aviso de notificaciones si aparecen. */
 fun MacrobenchmarkScope.iniciarSesion(correo: String = CORREO_EMPLEADO, password: String = PASSWORD_EMPLEADO) {
     esperarLogin()
     val campos = device.findObjects(By.clazz("android.widget.EditText"))
     campos[0].text = correo
     campos[1].text = password
-    device.findObject(By.text("Iniciar sesión")).click()
+    ocultarTeclado()
+    esperar(By.text("Iniciar sesión")).click()
     cerrarAvisosDePrimerUso()
 }
 
@@ -105,6 +115,7 @@ fun MacrobenchmarkScope.consultarPorCodigo(codigo: String = CODIGO_LOTE) {
     device.findObject(By.text("Escribir código del lote")).click()
     val campo = esperar(By.clazz("android.widget.EditText"))
     campo.text = codigo
+    ocultarTeclado()
     esperar(By.text("Abrir lote")).click()
     esperar(By.text("Plantas disponibles"))
 }

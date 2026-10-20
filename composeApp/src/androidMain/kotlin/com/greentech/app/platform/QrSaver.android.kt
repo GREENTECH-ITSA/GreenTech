@@ -13,37 +13,19 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.FileProvider
-import com.greentech.app.resources.Res
-import com.greentech.app.resources.logo_icon
-import com.greentech.app.ui.theme.GreenTechLightExtended
+import com.greentech.app.ui.components.QrEstandar
 import io.github.alexzhirkevich.qrose.QrCodePainter
-import io.github.alexzhirkevich.qrose.options.QrBallShape
-import io.github.alexzhirkevich.qrose.options.QrBrush
-import io.github.alexzhirkevich.qrose.options.QrFrameShape
-import io.github.alexzhirkevich.qrose.options.QrLogoPadding
-import io.github.alexzhirkevich.qrose.options.QrLogoShape
-import io.github.alexzhirkevich.qrose.options.QrOptions
-import io.github.alexzhirkevich.qrose.options.QrPixelShape
-import io.github.alexzhirkevich.qrose.options.circle
-import io.github.alexzhirkevich.qrose.options.roundCorners
-import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.toImageBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.getDrawableResourceBytes
-import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.koin.mp.KoinPlatform
 import java.io.ByteArrayOutputStream
 import java.io.File
 
 /**
- * Imagen del QR del lote: PNG de 1024 px de ancho, fondo blanco, el mismo estilo que la tarjeta
- * de la pantalla (esquinas redondeadas, acento verde y logo) y el código del lote debajo.
+ * Imagen del QR del lote para imprimir: PNG ≥ 1024 px, QR estándar negro sobre blanco con zona de
+ * silencio (ver [QrEstandar]) y el código del lote debajo.
  *
  * - Guardar: MediaStore en Pictures/GreenTech (Android 10+, sin permiso). En Android 8–9 se escribe
  *   en la carpeta pública de imágenes; la pantalla pide WRITE_EXTERNAL_STORAGE antes de llamar.
@@ -114,57 +96,52 @@ actual class QrSaver actual constructor() {
         return true
     }
 
-    @OptIn(ExperimentalResourceApi::class)
-    private suspend fun renderizarPng(codigo: String): ByteArray {
-        val colores = GreenTechLightExtended
-        val logoBytes = getDrawableResourceBytes(getSystemResourceEnvironment(), Res.drawable.logo_icon)
-        val logo = BitmapPainter(BitmapFactory.decodeByteArray(logoBytes, 0, logoBytes.size).asImageBitmap())
-        val opciones = QrOptions {
-            shapes {
-                darkPixel = QrPixelShape.roundCorners()
-                ball = QrBallShape.roundCorners(.3f)
-                frame = QrFrameShape.roundCorners(.3f)
-            }
-            colors {
-                dark = QrBrush.solid(colores.qrTinta)
-                ball = QrBrush.solid(colores.qrAcento)
-                frame = QrBrush.solid(colores.qrAcento)
-            }
-            logo {
-                painter = logo
-                size = .22f
-                padding = QrLogoPadding.Natural(.1f)
-                shape = QrLogoShape.circle()
-            }
-        }
-        val qr = QrCodePainter(codigo, opciones).toImageBitmap(LADO_QR, LADO_QR).asAndroidBitmap()
+    /**
+     * PNG para imprimir (sin compresión con pérdida): QR estándar de [QrEstandar] con módulos de
+     * [PX_MODULO] px enteros (sin bordes borrosos), zona de silencio de 4 módulos y el código debajo por si
+     * el QR se daña. Un código de 21 módulos queda en 1160 px de ancho: ≈ 370 dpi impreso a 8 cm.
+     * El bitmap se libera en cuanto se comprime.
+     */
+    private fun renderizarPng(codigo: String): ByteArray {
+        val painter = QrCodePainter(codigo, QrEstandar.opciones)
+        val modulos = QrEstandar.modulos(painter)
+        val ladoQr = modulos * PX_MODULO
+        val silencio = QrEstandar.MODULOS_SILENCIO * PX_MODULO
+        val ancho = ladoQr + 2 * silencio
+        val alto = ancho + ALTO_TEXTO
+        val qr = painter.toImageBitmap(ladoQr, ladoQr).asAndroidBitmap()
 
-        val imagen = Bitmap.createBitmap(ANCHO, ALTO, Bitmap.Config.ARGB_8888)
-        val lienzo = android.graphics.Canvas(imagen)
-        lienzo.drawColor(android.graphics.Color.WHITE)
-        val margen = (ANCHO - LADO_QR) / 2f
-        lienzo.drawBitmap(qr, margen, margen, null)
-        val texto = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = colores.qrTinta.toArgb()
-            textSize = 84f
-            textAlign = Paint.Align.CENTER
-            typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            fontFeatureSettings = "tnum"
-        }
-        val baseTexto = margen + LADO_QR + (ALTO - margen - LADO_QR) / 2f - (texto.descent() + texto.ascent()) / 2f
-        lienzo.drawText(codigo, ANCHO / 2f, baseTexto, texto)
-
-        return ByteArrayOutputStream().use { salida ->
-            imagen.compress(Bitmap.CompressFormat.PNG, 100, salida)
+        val imagen = Bitmap.createBitmap(ancho, alto, Bitmap.Config.ARGB_8888)
+        try {
+            val lienzo = android.graphics.Canvas(imagen)
+            lienzo.drawColor(android.graphics.Color.WHITE)
+            lienzo.drawBitmap(qr, silencio.toFloat(), silencio.toFloat(), null)
+            val texto = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = android.graphics.Color.BLACK
+                textSize = 84f
+                textAlign = Paint.Align.CENTER
+                typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+                fontFeatureSettings = "tnum"
+            }
+            val baseTexto = ancho - silencio / 2f + ALTO_TEXTO / 2f - (texto.descent() + texto.ascent()) / 2f
+            lienzo.drawText(codigo, ancho / 2f, baseTexto, texto)
+            return ByteArrayOutputStream().use { salida ->
+                imagen.compress(Bitmap.CompressFormat.PNG, 100, salida)
+                salida.toByteArray()
+            }
+        } finally {
             imagen.recycle()
-            salida.toByteArray()
+            qr.recycle()
         }
     }
 
+    /** Solo para pruebas instrumentadas: el mismo bitmap que se exporta. */
+    internal fun renderizarParaPrueba(codigo: String): Bitmap = renderizarPng(codigo).let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+
     private companion object {
-        const val ANCHO = 1024
-        const val LADO_QR = 880
-        const val ALTO = 1200
+        /** 40 px por módulo: ≥ 1024 px de ancho para un QR de versión 1. */
+        const val PX_MODULO = 40
+        const val ALTO_TEXTO = 120
         const val CARPETA_GALERIA = "GreenTech"
         const val CARPETA_CACHE = "qr"
     }

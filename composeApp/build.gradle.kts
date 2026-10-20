@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.collections.immutable)
 
             implementation(libs.qrose)
             implementation(libs.haze)
@@ -61,6 +62,12 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
         }
         commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+        // Pruebas instrumentadas (lectura del QR exportado con ML Kit en condiciones difíciles).
+        androidInstrumentedTest.dependencies {
+            implementation(libs.androidx.test.ext.junit)
+            implementation(libs.androidx.test.runner)
             implementation(libs.kotlin.test)
         }
         androidMain.dependencies {
@@ -101,6 +108,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
         buildConfig = true
@@ -115,6 +123,20 @@ android {
                 keyAlias = propiedadesFirma.getProperty("keyAlias")
                 keyPassword = propiedadesFirma.getProperty("keyPassword")
             }
+        }
+    }
+    // La app solo está en español: se descartan las traducciones de las bibliotecas.
+    androidResources {
+        localeFilters += listOf("es")
+    }
+    // APK por ABI para instalación directa (las librerías nativas de ML Kit pesan ~5 MB por ABI) además de
+    // la universal. En Google Play se publica el App Bundle (bundleRelease), que ya reparte por ABI/densidad.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+            isUniversalApk = true
         }
     }
     packaging {

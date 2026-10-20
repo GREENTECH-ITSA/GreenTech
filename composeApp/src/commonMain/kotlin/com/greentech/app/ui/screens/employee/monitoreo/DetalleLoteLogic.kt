@@ -1,5 +1,7 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.runtime.Immutable
+import com.greentech.app.ui.core.IndiceLotesLocal
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -17,6 +19,7 @@ import kotlinx.coroutines.coroutineScope
 /** Acciones de registro disponibles desde el detalle del lote. */
 enum class AccionLote { ETAPA, OBSERVACION, ACTIVIDAD, CONDICIONES, ANOMALIA, RECOMENDACIONES, BITACORA, SALIDA }
 
+@Immutable
 data class DetalleLoteUiState(
     val lote: EstadoCarga<Lote> = EstadoCarga.Cargando,
     val condiciones: CondicionesLote? = null,
@@ -39,7 +42,12 @@ class DetalleLoteLogic(
     private val obtenerLote: ObtenerLoteUseCase,
     private val obtenerCondiciones: ObtenerCondicionesUseCase,
     private val recientes: RegistrosRecientes,
-) : BaseLogic<DetalleLoteUiState, DetalleLoteEvent>(DetalleLoteUiState(soloLectura = soloLectura)) {
+    private val indice: IndiceLotesLocal,
+) : BaseLogic<DetalleLoteUiState, DetalleLoteEvent>(
+    // Local primero: si el lote ya está en el índice (p. ej. recién leído por QR) se dibuja de inmediato
+    // y el repositorio lo refresca en segundo plano, sin volver al esqueleto.
+    DetalleLoteUiState(lote = indice.buscarPorId(loteId)?.let { EstadoCarga.Listo(it) } ?: EstadoCarga.Cargando, soloLectura = soloLectura),
+) {
 
     override fun onEvent(evento: DetalleLoteEvent) {
         when (evento) {
@@ -84,7 +92,10 @@ class DetalleLoteLogic(
             val cond = async { obtenerCondiciones(loteId) }
             val nuevoLote = lote.await().aEstadoCarga()
             val nuevasCondiciones = cond.await().datosOrNull()
-            actualizar { copy(lote = nuevoLote, condiciones = nuevasCondiciones) }
+            nuevoLote.datosOrNull?.let(indice::recordar)
+            // Si el refresco falla pero ya había datos locales, se conservan (modo sin conexión).
+            val visible = if (nuevoLote is EstadoCarga.Error && estado.lote is EstadoCarga.Listo) estado.lote else nuevoLote
+            actualizar { copy(lote = visible, condiciones = nuevasCondiciones ?: condiciones) }
         }
     }
 

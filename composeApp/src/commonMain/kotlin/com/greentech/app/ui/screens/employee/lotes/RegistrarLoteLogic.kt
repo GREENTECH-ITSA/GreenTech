@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.employee.lotes
 
+import kotlinx.serialization.Serializable
+import androidx.lifecycle.SavedStateHandle
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.PreferenciasUso
@@ -17,6 +20,7 @@ import com.greentech.shared.domain.validation.LoteValidator
 import com.greentech.shared.util.Fechas
 import kotlinx.datetime.LocalDate
 
+@Immutable
 data class RegistrarLoteUiState(
     val especies: List<Especie> = emptyList(),
     val zonas: List<Zona> = emptyList(),
@@ -58,21 +62,38 @@ sealed interface RegistrarLoteEvent {
     data object Ayuda : RegistrarLoteEvent
 }
 
+/** Lo escrito en el formulario (sobrevive a la muerte del proceso). */
+@Serializable
+private data class BorradorLote(val especieId: String?, val zonaId: String?, val cantidad: Int?, val cantidadTocada: Boolean, val fecha: LocalDate)
+
 class RegistrarLoteLogic(
     sesion: ObtenerSesionUseCase,
     private val catalogos: ObtenerCatalogosLoteUseCase,
     private val registrarLote: RegistrarLoteUseCase,
     private val preferencias: PreferenciasUso,
+    handle: SavedStateHandle,
 ) : BaseLogic<RegistrarLoteUiState, RegistrarLoteEvent>(
     RegistrarLoteUiState(responsable = sesion.actual()?.nombre.orEmpty()),
 ) {
     init {
+        val borrador = conservarBorrador(
+            handle,
+            BorradorLote.serializer(),
+            { BorradorLote(especie?.id, zona?.id, cantidad, cantidadTocada, fecha) },
+        ) { copy(cantidad = it.cantidad, cantidadTocada = it.cantidadTocada, fecha = it.fecha) }
         lanzar {
             val especies = catalogos.especies().datosOrNull().orEmpty()
             val zonas = catalogos.zonas().datosOrNull().orEmpty()
             // Valor por defecto útil: la zona del último lote que se registró en este equipo.
             val sugerida = zonas.firstOrNull { it.id == preferencias.ultimaZonaId }
-            actualizar { copy(especies = especies, zonas = zonas, zonaSugerida = sugerida, zona = zona ?: sugerida) }
+            val especieBorrador = especies.firstOrNull { it.id == borrador?.especieId }
+            val zonaBorrador = zonas.firstOrNull { it.id == borrador?.zonaId }
+            actualizar {
+                copy(
+                    especies = especies, zonas = zonas, zonaSugerida = sugerida,
+                    especie = especie ?: especieBorrador, zona = zona ?: zonaBorrador ?: sugerida,
+                )
+            }
         }
     }
 

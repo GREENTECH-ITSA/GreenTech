@@ -1,11 +1,13 @@
 package com.greentech.app.ui.screens.common
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
 import com.greentech.shared.domain.model.Rol
 import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 
+@Immutable
 data class AyudaUiState(
     val contenido: ContenidoAyuda = AyudaContent.para(Rol.EMPLEADO),
     val busqueda: String = "",

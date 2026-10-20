@@ -1,6 +1,6 @@
 package com.greentech.app.ui.components.charts
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,62 +66,70 @@ fun LineChart(
     val fondo = MaterialTheme.colorScheme.surfaceContainerLow
     val estiloValor = MaterialTheme.typography.labelLarge.tabular()
     var tocado by remember { mutableStateOf<Int?>(null) }
-    val ultimo = valores.lastOrNull()
-    val resumen = buildString {
-        append(descripcion)
-        if (ultimo != null) append(". Ahora: ${formatearNumero(ultimo, decimales)} $unidad")
-        if (idealMin != null && idealMax != null) append(". Rango ideal ${formatearNumero(idealMin, 0)} a ${formatearNumero(idealMax, 0)} $unidad")
+    val resumen = remember(valores, descripcion, unidad, decimales, idealMin, idealMax) {
+        val ultimo = valores.lastOrNull()
+        buildString {
+            append(descripcion)
+            if (ultimo != null) append(". Ahora: ${formatearNumero(ultimo, decimales)} $unidad")
+            if (idealMin != null && idealMax != null) append(". Rango ideal ${formatearNumero(idealMin, 0)} a ${formatearNumero(idealMax, 0)} $unidad")
+        }
     }
 
     Column(modifier.clearAndSetSemantics { contentDescription = resumen }) {
         BoxWithConstraints(Modifier.fillMaxWidth().height(alto)) {
             val anchoPx = constraints.maxWidth.toFloat()
-            Canvas(
+            // La ruta, las escalas y la etiqueta del último valor se calculan una vez por tamaño y datos
+            // (drawWithCache); la entrada y el toque solo vuelven a dibujar.
+            Spacer(
                 Modifier.fillMaxWidth().height(alto).inspeccionar { pos ->
                     tocado = if (pos == null || valores.size < 2) null
                     else ((pos.x / anchoPx) * (valores.size - 1) + 0.5f).toInt().coerceIn(0, valores.lastIndex)
-                },
-            ) {
-                val margenSuperior = 24.dp.toPx()
-                val margenDerecho = 8.dp.toPx()
-                val altoUtil = size.height - margenSuperior
-                val ancho = size.width - margenDerecho
-                val rango = (escalaMax - escalaMin).takeIf { it > 0 } ?: 1.0
-                fun y(v: Double) = margenSuperior + altoUtil * (1f - ((v - escalaMin) / rango).toFloat().coerceIn(0f, 1f))
-                fun x(i: Int) = if (valores.size < 2) 0f else ancho * i / (valores.size - 1)
-
-                if (idealMin != null && idealMax != null) {
-                    drawRect(banda, topLeft = Offset(0f, y(idealMax)), size = Size(size.width, y(idealMin) - y(idealMax)))
-                }
-                lineasGuia(guia)
-                if (valores.size < 2) return@Canvas
-                val path = Path().apply {
-                    valores.forEachIndexed { i, v -> if (i == 0) moveTo(x(i), y(v)) else lineTo(x(i), y(v)) }
-                }
-                clipRect(right = size.width * progresoEscalonado(entrada, 0, 1)) {
-                    drawPath(path, color, style = Stroke(Grafica.grosorLinea.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-                }
-                if (entrada >= 1f) {
-                    val fin = Offset(x(valores.lastIndex), y(valores.last()))
-                    drawCircle(fondo, radius = Grafica.radioPunto.toPx() + 2.dp.toPx(), center = fin)
-                    drawCircle(color, radius = Grafica.radioPunto.toPx(), center = fin)
-                    if (tocado == null) {
-                        val medida = medidor.measure("${formatearNumero(valores.last(), decimales)} $unidad", estiloValor.copy(color = texto))
-                        drawText(
-                            medida,
-                            topLeft = Offset(
-                                (fin.x - medida.size.width).coerceAtLeast(0f),
-                                (fin.y - medida.size.height - 8.dp.toPx()).coerceAtLeast(0f),
-                            ),
-                        )
+                }.drawWithCache {
+                    val margenSuperior = 24.dp.toPx()
+                    val margenDerecho = 8.dp.toPx()
+                    val altoUtil = size.height - margenSuperior
+                    val ancho = size.width - margenDerecho
+                    val rango = (escalaMax - escalaMin).takeIf { it > 0 } ?: 1.0
+                    fun y(v: Double) = margenSuperior + altoUtil * (1f - ((v - escalaMin) / rango).toFloat().coerceIn(0f, 1f))
+                    fun x(i: Int) = if (valores.size < 2) 0f else ancho * i / (valores.size - 1)
+                    val path = Path().apply {
+                        valores.forEachIndexed { i, v -> if (i == 0) moveTo(x(i), y(v)) else lineTo(x(i), y(v)) }
                     }
-                }
-                tocado?.let { i ->
-                    val px = x(i)
-                    drawLine(texto.copy(alpha = 0.5f), Offset(px, 0f), Offset(px, size.height), strokeWidth = Grafica.grosorGuia.toPx())
-                    drawCircle(color, radius = Grafica.radioPunto.toPx(), center = Offset(px, y(valores[i])))
-                }
-            }
+                    val trazo = Stroke(Grafica.grosorLinea.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    val fin = valores.lastOrNull()?.let { Offset(x(valores.lastIndex), y(it)) }
+                    val medida = valores.lastOrNull()?.let {
+                        medidor.measure("${formatearNumero(it, decimales)} $unidad", estiloValor.copy(color = texto))
+                    }
+                    onDrawBehind {
+                        if (idealMin != null && idealMax != null) {
+                            drawRect(banda, topLeft = Offset(0f, y(idealMax)), size = Size(size.width, y(idealMin) - y(idealMax)))
+                        }
+                        lineasGuia(guia)
+                        if (valores.size < 2 || fin == null) return@onDrawBehind
+                        clipRect(right = size.width * progresoEscalonado(entrada, 0, 1)) {
+                            drawPath(path, color, style = trazo)
+                        }
+                        if (entrada >= 1f) {
+                            drawCircle(fondo, radius = Grafica.radioPunto.toPx() + 2.dp.toPx(), center = fin)
+                            drawCircle(color, radius = Grafica.radioPunto.toPx(), center = fin)
+                            if (tocado == null && medida != null) {
+                                drawText(
+                                    medida,
+                                    topLeft = Offset(
+                                        (fin.x - medida.size.width).coerceAtLeast(0f),
+                                        (fin.y - medida.size.height - 8.dp.toPx()).coerceAtLeast(0f),
+                                    ),
+                                )
+                            }
+                        }
+                        tocado?.let { i ->
+                            val px = x(i)
+                            drawLine(texto.copy(alpha = 0.5f), Offset(px, 0f), Offset(px, size.height), strokeWidth = Grafica.grosorGuia.toPx())
+                            drawCircle(color, radius = Grafica.radioPunto.toPx(), center = Offset(px, y(valores[i])))
+                        }
+                    }
+                },
+            )
             tocado?.let { i ->
                 val centro = if (valores.size < 2) 0.dp else maxWidth * (i.toFloat() / (valores.size - 1))
                 TooltipGrafica(

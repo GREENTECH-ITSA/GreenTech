@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.admin.personal
 
+import kotlinx.serialization.Serializable
+import androidx.lifecycle.SavedStateHandle
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
@@ -14,6 +17,7 @@ import com.greentech.shared.domain.validation.EmailValidator
 import com.greentech.shared.domain.validation.NombreValidator
 import com.greentech.shared.domain.validation.PasswordValidator
 
+@Immutable
 data class AltaTrabajadorUiState(
     val nombre: String = "",
     val correo: String = "",
@@ -63,10 +67,22 @@ sealed interface AltaTrabajadorEvent {
     data object Ayuda : AltaTrabajadorEvent
 }
 
+/** Lo escrito en el formulario (sobrevive a la muerte del proceso). */
+@Serializable
+private data class BorradorAlta(val nombre: String, val correo: String, val rol: Rol?)
+
 class AltaTrabajadorLogic(
     private val alta: AltaTrabajadorUseCase,
     private val sesion: ObtenerSesionUseCase,
+    handle: SavedStateHandle,
 ) : BaseLogic<AltaTrabajadorUiState, AltaTrabajadorEvent>(AltaTrabajadorUiState()) {
+
+    init {
+        // La contraseña provisional no se guarda en el estado del sistema (queda fuera del borrador).
+        conservarBorrador(handle, BorradorAlta.serializer(), { BorradorAlta(nombre, correo, rol) }) {
+            copy(nombre = it.nombre, correo = it.correo, rol = it.rol)
+        }
+    }
 
     override fun onEvent(evento: AltaTrabajadorEvent) {
         when (evento) {

@@ -1,6 +1,7 @@
 package com.greentech.app.ui.components.charts
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -31,23 +32,27 @@ fun Sparkline(
     descripcion: String? = null,
 ) {
     val entrada by rememberEntrada(valores)
-    Canvas(
-        modifier.fillMaxWidth().height(alto).clearAndSetSemantics { if (descripcion != null) contentDescription = descripcion },
-    ) {
-        if (valores.size < 2) return@Canvas
-        val radio = Grafica.radioPuntoMini.toPx()
-        val min = valores.min()
-        val max = valores.max()
-        val rango = (max - min).takeIf { it > 0 } ?: 1.0
-        val ancho = size.width - radio
-        fun x(i: Int) = ancho * i / (valores.size - 1)
-        fun y(v: Double) = radio + (size.height - radio * 2) * (1f - ((v - min) / rango).toFloat())
-        val path = Path().apply {
-            valores.forEachIndexed { i, v -> if (i == 0) moveTo(x(i), y(v)) else lineTo(x(i), y(v)) }
-        }
-        clipRect(right = size.width * progresoEscalonado(entrada, 0, 1)) {
-            drawPath(path, color, style = Stroke(Grafica.grosorLinea.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-        }
-        if (entrada >= 1f) drawCircle(color, radius = radio, center = Offset(x(valores.lastIndex), y(valores.last())))
-    }
+    // Ruta y escala por tamaño y datos (drawWithCache); la entrada solo redibuja el recorte.
+    Spacer(
+        modifier.fillMaxWidth().height(alto).clearAndSetSemantics { if (descripcion != null) contentDescription = descripcion }
+            .drawWithCache {
+                val radio = Grafica.radioPuntoMini.toPx()
+                if (valores.size < 2) return@drawWithCache onDrawBehind { }
+                val min = valores.min()
+                val max = valores.max()
+                val rango = (max - min).takeIf { it > 0 } ?: 1.0
+                val ancho = size.width - radio
+                fun x(i: Int) = ancho * i / (valores.size - 1)
+                fun y(v: Double) = radio + (size.height - radio * 2) * (1f - ((v - min) / rango).toFloat())
+                val path = Path().apply {
+                    valores.forEachIndexed { i, v -> if (i == 0) moveTo(x(i), y(v)) else lineTo(x(i), y(v)) }
+                }
+                val trazo = Stroke(Grafica.grosorLinea.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                val fin = Offset(x(valores.lastIndex), y(valores.last()))
+                onDrawBehind {
+                    clipRect(right = size.width * progresoEscalonado(entrada, 0, 1)) { drawPath(path, color, style = trazo) }
+                    if (entrada >= 1f) drawCircle(color, radius = radio, center = fin)
+                }
+            },
+    )
 }

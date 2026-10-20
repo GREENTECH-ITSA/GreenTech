@@ -76,14 +76,17 @@ fun LoteCard(
     tareasPendientes: Int? = null,
     plantasEnTransito: Int? = null,
 ) {
-    val disponibles = Textos.Lotes.DISPONIBLES_DE.conValores(lote.cantidadDisponible.formatoMiles(), lote.cantidadInicial.formatoMiles())
-    val resumen = listOfNotNull(
+    // Textos formateados una sola vez por lote (no en cada recomposición ni durante el scroll).
+    val disponibles = remember(lote.cantidadDisponible, lote.cantidadInicial) {
+        Textos.Lotes.DISPONIBLES_DE.conValores(lote.cantidadDisponible.formatoMiles(), lote.cantidadInicial.formatoMiles())
+    }
+    val resumen = remember(lote, disponibles, ultimaActividad, tareasPendientes, plantasEnTransito) { listOfNotNull(
         lote.especie.nombre, lote.codigo, "${Textos.Disenio.SALUD}: ${lote.estadoSalud.etiqueta}", lote.etapa.etiqueta,
         disponibles, lote.zona.nombre,
         ultimaActividad?.let { "${Textos.LoteCard.ULTIMA_ACTIVIDAD}: $it" },
         tareasPendientes?.takeIf { it > 0 }?.let(::textoTareas),
         plantasEnTransito?.takeIf { it > 0 }?.let { Textos.LoteCard.PLANTAS_EN_TRANSITO.conValores(it) },
-    ).joinToString(", ")
+    ).joinToString(", ") }
     val destacada = variante == VarianteLoteCard.DESTACADA
     val esquema = MaterialTheme.colorScheme
     ContenedorLote(

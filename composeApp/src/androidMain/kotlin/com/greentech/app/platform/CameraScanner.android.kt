@@ -10,6 +10,7 @@ import android.view.ScaleGestureDetector
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.mp.KoinPlatform
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Escáner de QR con CameraX (Preview + ImageAnalysis) y ML Kit Barcode Scanning (modelo empaquetado).
@@ -126,11 +128,16 @@ actual class CameraScanner actual constructor() {
         val vistaPrevia = Preview.Builder().build().also { it.setSurfaceProvider(vista.surfaceProvider) }
         val analisis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            // Resolución por rango: 1280×720 como objetivo (suficiente para un QR de 3 cm a 20–30 cm sin
+            // saturar el procesador) y nunca menos de 640×480, así funciona en cámaras modestas de 5 MP.
             .setResolutionSelector(
                 ResolutionSelector.Builder()
                     .setResolutionStrategy(
                         ResolutionStrategy(Size(1280, 720), ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER),
                     )
+                    .setResolutionFilter { tamanos, _ ->
+                        tamanos.filter { it.width * it.height >= MINIMO_ANALISIS }.ifEmpty { tamanos }
+                    }
                     .build(),
             )
             .build()
@@ -183,6 +190,10 @@ actual class CameraScanner actual constructor() {
         _zoom.value = 1f
     }
 
+    /**
+     * Pellizco para zoom y toque para enfocar. El autoenfoque continuo ya viene activo en la vista previa
+     * de CameraX; el toque fija enfoque y exposición en ese punto (útil con códigos pequeños o reflejos).
+     */
     @SuppressLint("ClickableViewAccessibility")
     private fun habilitarPellizco(vista: PreviewView) {
         val detector = ScaleGestureDetector(vista.context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -194,9 +205,22 @@ actual class CameraScanner actual constructor() {
         })
         vista.setOnTouchListener { v, evento ->
             detector.onTouchEvent(evento)
-            if (evento.action == MotionEvent.ACTION_UP) v.performClick()
+            if (evento.action == MotionEvent.ACTION_UP) {
+                if (!detector.isInProgress && evento.eventTime - evento.downTime < TOQUE_MAX_MS) enfocarEn(vista, evento.x, evento.y)
+                v.performClick()
+            }
             true
         }
+    }
+
+    private fun enfocarEn(vista: PreviewView, x: Float, y: Float) {
+        val camara = camara ?: return
+        val punto = vista.meteringPointFactory.createPoint(x, y)
+        val accion = FocusMeteringAction.Builder(punto, FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE)
+            .setAutoCancelDuration(ENFOQUE_MANUAL_S, TimeUnit.SECONDS)
+            .build()
+        // Si la cámara no admite enfoque por punto, sigue con el autoenfoque continuo.
+        runCatching { camara.cameraControl.startFocusAndMetering(accion) }
     }
 
     @androidx.annotation.OptIn(ExperimentalGetImage::class)
@@ -226,6 +250,9 @@ actual class CameraScanner actual constructor() {
 
     private companion object {
         const val INTERVALO_LECTURAS_MS = 1_500L
+        const val MINIMO_ANALISIS = 640 * 480
+        const val TOQUE_MAX_MS = 250L
+        const val ENFOQUE_MANUAL_S = 3L
     }
 }
 

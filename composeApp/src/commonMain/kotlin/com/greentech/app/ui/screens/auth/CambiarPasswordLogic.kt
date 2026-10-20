@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.auth
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
 import com.greentech.app.ui.strings.Textos
@@ -10,6 +11,7 @@ import com.greentech.shared.domain.usecase.CambiarPasswordUseCase
 import com.greentech.shared.domain.validation.PasswordValidator
 import com.greentech.shared.domain.validation.RequisitosPassword
 
+@Immutable
 data class CambiarPasswordUiState(
     val actual: String = "",
     val nueva: String = "",

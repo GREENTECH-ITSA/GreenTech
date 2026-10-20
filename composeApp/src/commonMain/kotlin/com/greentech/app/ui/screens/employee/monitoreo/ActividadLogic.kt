@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import kotlinx.serialization.Serializable
+import androidx.lifecycle.SavedStateHandle
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -15,6 +18,7 @@ import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 import com.greentech.shared.domain.usecase.RegistrarActividadUseCase
 import com.greentech.shared.util.Fechas
 
+@Immutable
 data class ActividadUiState(
     val lote: EstadoCarga<Lote> = EstadoCarga.Cargando,
     val tipo: TipoActividad? = null,
@@ -36,17 +40,25 @@ sealed interface ActividadEvent {
     data object Ayuda : ActividadEvent
 }
 
+/** Lo escrito en el formulario (sobrevive a la muerte del proceso). */
+@Serializable
+private data class BorradorActividad(val tipo: TipoActividad?, val observacion: String)
+
 class ActividadLogic(
     private val loteId: String,
     private val obtenerLote: ObtenerLoteUseCase,
     private val registrar: RegistrarActividadUseCase,
     sesion: ObtenerSesionUseCase,
     private val recientes: RegistrosRecientes,
+    handle: SavedStateHandle,
 ) : BaseLogic<ActividadUiState, ActividadEvent>(
     // Responsable y fecha se llenan solos: el empleado no escribe nada de esto.
     ActividadUiState(responsable = sesion.actual()?.nombre.orEmpty(), fechaHora = "${Textos.Comun.HOY}, ${Fechas.hora(Fechas.ahora())}"),
 ) {
     init {
+        conservarBorrador(handle, BorradorActividad.serializer(), { BorradorActividad(tipo, observacion) }) {
+            copy(tipo = it.tipo, observacion = it.observacion)
+        }
         lanzar {
             val r = obtenerLote(loteId).aEstadoCarga()
             actualizar { copy(lote = r) }

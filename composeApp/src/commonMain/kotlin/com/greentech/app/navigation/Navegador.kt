@@ -10,6 +10,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
+import com.greentech.app.ui.components.ContenidoCentrado
 import com.greentech.app.ui.components.LocalRetroalimentacion
 import com.greentech.app.ui.components.Retroalimentacion
 import com.greentech.app.ui.notification.NotificationManager
@@ -27,8 +28,15 @@ class Navegador(
     private val raiz: NavHostController,
     private val notificaciones: NotificationManager,
     private val pestanas: List<AppDestination> = emptyList(),
+    /** Efectos que resuelve la pantalla contenedora (p. ej. la lista-detalle en tablets). true = ya resuelto. */
+    private val interceptar: (UiEffect) -> Boolean = { false },
 ) {
+    /** Mismo navegador, pero [primero] decide antes sobre cada efecto. */
+    fun interceptando(primero: (UiEffect) -> Boolean): Navegador =
+        Navegador(nav, raiz, notificaciones, pestanas) { e -> primero(e) || interceptar(e) }
+
     fun manejar(efecto: UiEffect) {
+        if (interceptar(efecto)) return
         when (efecto) {
             is UiEffect.Notificar -> notificaciones.mostrar(efecto.tipo, efecto.mensaje, efecto.titulo)
             is UiEffect.Navegar -> navegar(efecto.destino, efecto.reemplazar)
@@ -95,6 +103,7 @@ fun <S, E> Conectar(
         }
     }
     CompositionLocalProvider(LocalRetroalimentacion provides retro) {
-        pantalla(estado, logic::onEvent)
+        // En tablets el contenido no se estira: máximo 840 dp, centrado.
+        ContenidoCentrado { pantalla(estado, logic::onEvent) }
     }
 }

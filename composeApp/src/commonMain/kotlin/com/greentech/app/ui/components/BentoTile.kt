@@ -186,8 +186,8 @@ fun LazyGridScope.bento(
     size: BentoSize,
     key: Any,
     contenido: @Composable LazyGridItemScope.() -> Unit,
-) = item(key = key, span = { GridItemSpan(minOf(size.columnas, maxLineSpan)) }, content = contenido)
+) = item(key = key, span = { GridItemSpan(minOf(size.columnas, maxLineSpan)) }, contentType = key, content = contenido)
 
 /** Elemento a lo ancho de toda la cuadrícula (títulos de sección, listas de acciones). */
 fun LazyGridScope.anchoCompleto(key: Any, contenido: @Composable LazyGridItemScope.() -> Unit) =
-    item(key = key, span = { GridItemSpan(maxLineSpan) }, content = contenido)
+    item(key = key, span = { GridItemSpan(maxLineSpan) }, contentType = key, content = contenido)

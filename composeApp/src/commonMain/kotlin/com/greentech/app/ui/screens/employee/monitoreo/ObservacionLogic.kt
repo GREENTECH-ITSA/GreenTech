@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import kotlinx.serialization.Serializable
+import androidx.lifecycle.SavedStateHandle
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -14,6 +17,7 @@ import com.greentech.shared.domain.usecase.ObtenerLoteUseCase
 import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 import com.greentech.shared.domain.usecase.RegistrarObservacionUseCase
 
+@Immutable
 data class ObservacionUiState(
     val lote: EstadoCarga<Lote> = EstadoCarga.Cargando,
     val texto: String = "",
@@ -44,19 +48,28 @@ sealed interface ObservacionEvent {
     data object Ayuda : ObservacionEvent
 }
 
+/** Lo escrito en el formulario (sobrevive a la muerte del proceso). */
+@Serializable
+private data class BorradorObservacion(val texto: String, val textoTocado: Boolean, val salud: EstadoSalud, val fotoUri: String?)
+
 class ObservacionLogic(
     private val loteId: String,
     private val obtenerLote: ObtenerLoteUseCase,
     private val registrar: RegistrarObservacionUseCase,
     private val sesion: ObtenerSesionUseCase,
     private val recientes: RegistrosRecientes,
+    handle: SavedStateHandle,
 ) : BaseLogic<ObservacionUiState, ObservacionEvent>(ObservacionUiState()) {
 
     init {
+        val borrador = conservarBorrador(handle, BorradorObservacion.serializer(), { BorradorObservacion(texto, textoTocado, salud, fotoUri) }) {
+            copy(texto = it.texto, textoTocado = it.textoTocado, salud = it.salud, fotoUri = it.fotoUri, conFoto = it.fotoUri != null)
+        }
         lanzar {
             val r = obtenerLote(loteId)
             val saludActual = (r as? AppResult.Exito)?.datos?.estadoSalud ?: estado.salud
-            actualizar { copy(lote = r.aEstadoCarga(), salud = saludActual, saludInicial = saludActual) }
+            // La salud elegida antes de recrear la pantalla gana sobre la del lote.
+            actualizar { copy(lote = r.aEstadoCarga(), salud = borrador?.salud ?: saludActual, saludInicial = saludActual) }
         }
     }
 

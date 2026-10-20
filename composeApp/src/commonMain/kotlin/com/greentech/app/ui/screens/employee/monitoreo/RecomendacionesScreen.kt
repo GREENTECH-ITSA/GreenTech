@@ -83,14 +83,14 @@ fun RecomendacionesScreen(estado: RecomendacionesUiState, onEvent: (Recomendacio
                 contentPadding = PaddingValues(start = Dimens.margenLateral, end = Dimens.margenLateral, top = Dimens.sm, bottom = padding.calculateBottomPadding() + Dimens.xl),
                 verticalArrangement = Arrangement.spacedBy(Dimens.md),
             ) {
-                item(key = "intro") {
+                item(key = "intro", contentType = "intro") {
                     Text(
                         Textos.Recomendaciones.SUBTITULO,
                         style = GtTexto.cuerpo,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                itemsIndexed(lista, key = { _, r -> r.id }) { i, r -> TarjetaRecomendacion(r, Modifier.entradaEscalonada(i)) }
+                itemsIndexed(lista, key = { _, r -> r.id }, contentType = { _, _ -> "lista" }) { i, r -> TarjetaRecomendacion(r, Modifier.entradaEscalonada(i)) }
             }
         }
     }

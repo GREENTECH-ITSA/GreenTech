@@ -14,14 +14,20 @@ import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.uiautomator.By
+import org.junit.BeforeClass
 import org.junit.Rule
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
  * Macrobenchmarks de GreenTech (build benchmarkRelease: R8 + Baseline Profile si existe).
  * Se mide con la compilación por defecto de una instalación real (perfiles de las bibliotecas y de la
- * app si están en la APK): CompilationMode.DEFAULT.
+ * app si están en la APK). Como MIUI bloquea la reinstalación por USB que hace CompilationMode.Partial,
+ * la compilación se prepara a mano una vez por clase ([prepararCompilacion]: ProfileInstaller instala el
+ * perfil y se compila con speed-profile, igual que tras una instalación desde Play) y se mide con
+ * CompilationMode.Ignore().
  *
  *   ./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest
  *   (una sola clase: -Pandroid.testInstrumentationRunnerArguments.class=com.greentech.baselineprofile.ArranqueBenchmark)
@@ -29,7 +35,23 @@ import org.junit.runner.RunWith
  * Los resultados (JSON con todas las iteraciones) quedan en
  * baselineprofile/build/outputs/connected_android_test_additional_output/.
  */
-private val compilacion = CompilationMode.DEFAULT
+private val compilacion = CompilationMode.Ignore()
+
+/**
+ * Deja la app compilada como en una instalación real: se borra la compilación previa, ProfileInstaller
+ * instala el Baseline Profile de la APK (si lo trae) y ART compila con speed-profile.
+ */
+fun prepararCompilacion() {
+    val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+    device.executeShellCommand("am force-stop $PAQUETE")
+    device.executeShellCommand("cmd package compile --reset $PAQUETE")
+    device.executeShellCommand("am start -W -n $PAQUETE/.MainActivity")
+    Thread.sleep(3_000)
+    device.executeShellCommand("am broadcast -a androidx.profileinstaller.action.INSTALL_PROFILE $PAQUETE/androidx.profileinstaller.ProfileInstallReceiver")
+    Thread.sleep(1_000)
+    device.executeShellCommand("am force-stop $PAQUETE")
+    device.executeShellCommand("cmd package compile -f -m speed-profile $PAQUETE")
+}
 
 /** Deja la app abierta y con sesión de empleado (la sesión de los Fakes vive en memoria). */
 private fun MacrobenchmarkScope.asegurarSesion(correo: String = CORREO_EMPLEADO, password: String = PASSWORD_EMPLEADO) {
@@ -44,6 +66,10 @@ private fun MacrobenchmarkScope.asegurarSesion(correo: String = CORREO_EMPLEADO,
 @LargeTest
 class ArranqueBenchmark {
     @get:Rule val regla = MacrobenchmarkRule()
+
+    companion object {
+        @JvmStatic @BeforeClass fun compilar() = prepararCompilacion()
+    }
 
     /** Arranque en frío. timeToInitialDisplay = primer frame; timeToFullDisplay = Login dibujado (reportFullyDrawn). */
     @Test fun arranqueFrio() = arranque(StartupMode.COLD)
@@ -70,6 +96,10 @@ class ArranqueBenchmark {
 class FlujosBenchmark {
     @get:Rule val regla = MacrobenchmarkRule()
 
+    companion object {
+        @JvmStatic @BeforeClass fun compilar() = prepararCompilacion()
+    }
+
     @Test
     fun loginAInicio() = regla.measureRepeated(
         packageName = PAQUETE,
@@ -85,9 +115,10 @@ class FlujosBenchmark {
             val campos = device.findObjects(By.clazz("android.widget.EditText"))
             campos[0].text = CORREO_EMPLEADO
             campos[1].text = PASSWORD_EMPLEADO
+            ocultarTeclado()
         },
     ) {
-        device.findObject(By.text("Iniciar sesión")).click()
+        esperar(By.text("Iniciar sesión")).click()
         cerrarAvisosDePrimerUso()
         esperarInicioEmpleado()
     }
@@ -160,6 +191,10 @@ class FlujosBenchmark {
 @LargeTest
 class ConsultaQrBenchmark {
     @get:Rule val regla = MacrobenchmarkRule()
+
+    companion object {
+        @JvmStatic @BeforeClass fun compilar() = prepararCompilacion()
+    }
 
     /** Inicio de la cámara: abrir Escanear → primer cuadro analizado (qr_camara_lista). */
     @Test

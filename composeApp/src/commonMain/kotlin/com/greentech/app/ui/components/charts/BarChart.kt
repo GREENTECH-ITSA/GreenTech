@@ -1,6 +1,7 @@
 package com.greentech.app.ui.components.charts
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,10 +67,12 @@ fun BarChart(
     val estiloEtiqueta = MaterialTheme.typography.labelMedium.tabular()
     var tocado by remember { mutableStateOf<Int?>(null) }
     val activo = tocado ?: resaltado
-    val maximo = (series.flatMap { it.valores }.maxOrNull() ?: 0).coerceAtLeast(1)
-    val resumen = descripcion + ". " + etiquetas.mapIndexed { i, e ->
-        e + ": " + series.joinToString(", ") { "${it.nombre} ${formatearNumero(it.valores.getOrElse(i) { 0 }.toDouble())}" }
-    }.joinToString(". ")
+    val maximo = remember(series) { (series.flatMap { it.valores }.maxOrNull() ?: 0).coerceAtLeast(1) }
+    val resumen = remember(descripcion, etiquetas, series) {
+        descripcion + ". " + etiquetas.mapIndexed { i, e ->
+            e + ": " + series.joinToString(", ") { "${it.nombre} ${formatearNumero(it.valores.getOrElse(i) { 0 }.toDouble())}" }
+        }.joinToString(". ")
+    }
 
     Column(modifier.clearAndSetSemantics { contentDescription = resumen }) {
         if (series.size > 1) {
@@ -78,46 +81,52 @@ fun BarChart(
         }
         BoxWithConstraints(Modifier.fillMaxWidth().height(alto)) {
             val anchoPx = constraints.maxWidth.toFloat()
-            Canvas(
+            // Las etiquetas del periodo activo se miden una vez (drawWithCache); en la entrada solo se redibuja.
+            Spacer(
                 Modifier.fillMaxWidth().height(alto).inspeccionar { pos ->
                     tocado = pos?.let { ((it.x / anchoPx) * etiquetas.size).toInt().coerceIn(0, etiquetas.lastIndex) }
-                },
-            ) {
-                val margenSuperior = 22.dp.toPx()
-                val base = size.height
-                val altoUtil = base - margenSuperior
-                lineasGuia(guia)
-                if (etiquetas.isEmpty()) return@Canvas
-                val grupo = size.width / etiquetas.size
-                val separacion = 4.dp.toPx()
-                val anchoBarra = ((grupo * 0.62f) - separacion * (series.size - 1)) / series.size.coerceAtLeast(1)
-                etiquetas.indices.forEach { i ->
-                    val p = progresoEscalonado(entrada, i, etiquetas.size)
-                    val inicio = grupo * i + (grupo - (anchoBarra * series.size + separacion * (series.size - 1))) / 2
-                    series.forEachIndexed { j, s ->
-                        val valor = s.valores.getOrElse(i) { 0 }
-                        val h = altoUtil * (valor.toFloat() / maximo) * p
-                        val x = inicio + j * (anchoBarra + separacion)
-                        val color = if (i == activo) s.color else s.color.copy(alpha = Grafica.ALFA_ATENUADO)
-                        barraVertical(color, x, anchoBarra, h, base)
-                        // Etiqueta directa encima de cada barra del periodo resaltado.
-                        if (i == activo && p >= 1f) {
-                            val medida = medidor.measure(formatearNumero(valor.toDouble()), estiloEtiqueta.copy(color = texto))
-                            drawText(
-                                medida,
-                                topLeft = Offset(
-                                    (x + anchoBarra / 2 - medida.size.width / 2).coerceIn(0f, size.width - medida.size.width),
-                                    (base - h - medida.size.height - 2.dp.toPx()).coerceAtLeast(0f),
-                                ),
-                            )
+                }.drawWithCache {
+                    val medidas = series.map { s ->
+                        medidor.measure(formatearNumero(s.valores.getOrElse(activo) { 0 }.toDouble()), estiloEtiqueta.copy(color = texto))
+                    }
+                    onDrawBehind {
+                        val margenSuperior = 22.dp.toPx()
+                        val base = size.height
+                        val altoUtil = base - margenSuperior
+                        lineasGuia(guia)
+                        if (etiquetas.isEmpty()) return@onDrawBehind
+                        val grupo = size.width / etiquetas.size
+                        val separacion = 4.dp.toPx()
+                        val anchoBarra = ((grupo * 0.62f) - separacion * (series.size - 1)) / series.size.coerceAtLeast(1)
+                        etiquetas.indices.forEach { i ->
+                            val p = progresoEscalonado(entrada, i, etiquetas.size)
+                            val inicio = grupo * i + (grupo - (anchoBarra * series.size + separacion * (series.size - 1))) / 2
+                            series.forEachIndexed { j, s ->
+                                val valor = s.valores.getOrElse(i) { 0 }
+                                val h = altoUtil * (valor.toFloat() / maximo) * p
+                                val x = inicio + j * (anchoBarra + separacion)
+                                val color = if (i == activo) s.color else s.color.copy(alpha = Grafica.ALFA_ATENUADO)
+                                barraVertical(color, x, anchoBarra, h, base)
+                                // Etiqueta directa encima de cada barra del periodo resaltado.
+                                if (i == activo && p >= 1f) {
+                                    val medida = medidas[j]
+                                    drawText(
+                                        medida,
+                                        topLeft = Offset(
+                                            (x + anchoBarra / 2 - medida.size.width / 2).coerceIn(0f, size.width - medida.size.width),
+                                            (base - h - medida.size.height - 2.dp.toPx()).coerceAtLeast(0f),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                        tocado?.let { i ->
+                            val x = size.centroX(i, etiquetas.size)
+                            drawLine(texto.copy(alpha = 0.5f), Offset(x, 0f), Offset(x, base), strokeWidth = Grafica.grosorGuia.toPx())
                         }
                     }
-                }
-                tocado?.let { i ->
-                    val x = size.centroX(i, etiquetas.size)
-                    drawLine(texto.copy(alpha = 0.5f), Offset(x, 0f), Offset(x, base), strokeWidth = Grafica.grosorGuia.toPx())
-                }
-            }
+                },
+            )
             tocado?.let { i ->
                 val anchoGrupo = maxWidth / etiquetas.size
                 val centro = anchoGrupo * (i + 0.5f)

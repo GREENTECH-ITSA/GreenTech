@@ -114,7 +114,7 @@ fun <T> GtChipFiltro(
         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
         contentPadding = PaddingValues(horizontal = margen),
     ) {
-        items(opciones, key = { etiqueta(it) }) { op ->
+        items(opciones, key = { etiqueta(it) }, contentType = { "opcion" }) { op ->
             GtChip(texto = etiqueta(op), seleccionado = op == seleccionado, onClick = { onSeleccion(op) }, icono = icono?.invoke(op))
         }
     }

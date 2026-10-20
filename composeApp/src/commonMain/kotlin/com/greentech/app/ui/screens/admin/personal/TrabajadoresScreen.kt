@@ -125,7 +125,7 @@ fun TrabajadoresScreen(estado: TrabajadoresUiState, onEvent: (TrabajadoresEvent)
                         contentPadding = PaddingValues(start = Dimens.margenLateral, end = Dimens.margenLateral, top = Dimens.xs, bottom = padding.calculateBottomPadding() + Dimens.espacioFab),
                         verticalArrangement = Arrangement.spacedBy(Dimens.md),
                     ) {
-                        itemsIndexed(lista, key = { _, u -> u.id }) { i, u ->
+                        itemsIndexed(lista, key = { _, u -> u.id }, contentType = { _, _ -> "lista" }) { i, u ->
                             TarjetaTrabajador(
                                 usuario = u,
                                 esSesion = u.id == estado.idSesion,

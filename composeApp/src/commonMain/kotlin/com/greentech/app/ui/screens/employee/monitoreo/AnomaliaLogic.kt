@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import kotlinx.serialization.Serializable
+import androidx.lifecycle.SavedStateHandle
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -15,6 +18,7 @@ import com.greentech.shared.domain.usecase.ObtenerLoteUseCase
 import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 import com.greentech.shared.domain.usecase.RegistrarAnomaliaUseCase
 
+@Immutable
 data class AnomaliaUiState(
     val lote: EstadoCarga<Lote> = EstadoCarga.Cargando,
     val tipo: TipoAnomalia? = null,
@@ -48,15 +52,23 @@ sealed interface AnomaliaEvent {
     data object Ayuda : AnomaliaEvent
 }
 
+/** Lo escrito en el formulario (sobrevive a la muerte del proceso). */
+@Serializable
+private data class BorradorAnomalia(val tipo: TipoAnomalia?, val nombre: String?, val severidad: Severidad?, val descripcion: String)
+
 class AnomaliaLogic(
     private val loteId: String,
     private val obtenerLote: ObtenerLoteUseCase,
     private val registrar: RegistrarAnomaliaUseCase,
     private val sesion: ObtenerSesionUseCase,
     private val recientes: RegistrosRecientes,
+    handle: SavedStateHandle,
 ) : BaseLogic<AnomaliaUiState, AnomaliaEvent>(AnomaliaUiState()) {
 
     init {
+        conservarBorrador(handle, BorradorAnomalia.serializer(), { BorradorAnomalia(tipo, nombre, severidad, descripcion) }) {
+            copy(tipo = it.tipo, nombre = it.nombre, severidad = it.severidad, descripcion = it.descripcion)
+        }
         lanzar { val r = obtenerLote(loteId).aEstadoCarga(); actualizar { copy(lote = r) } }
     }
 

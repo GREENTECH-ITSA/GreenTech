@@ -1,10 +1,12 @@
 package com.greentech.app.ui.screens.common
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.PreferenciasUso
 import com.greentech.shared.domain.model.Rol
 import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 
+@Immutable
 data class IntroduccionUiState(
     val rol: Rol = Rol.EMPLEADO,
     val visible: Boolean = false,

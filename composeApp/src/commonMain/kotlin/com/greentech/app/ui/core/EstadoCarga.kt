@@ -1,8 +1,10 @@
 package com.greentech.app.ui.core
 
+import androidx.compose.runtime.Immutable
 import com.greentech.shared.domain.result.AppResult
 
 /** Estado de una consulta: cargando, lista con datos o con error. */
+@Immutable
 sealed interface EstadoCarga<out T> {
     data object Cargando : EstadoCarga<Nothing>
     data class Listo<out T>(val datos: T) : EstadoCarga<T>

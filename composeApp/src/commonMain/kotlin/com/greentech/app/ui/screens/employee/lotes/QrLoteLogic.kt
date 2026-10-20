@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.lotes
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.platform.QrSaver
 import com.greentech.app.ui.core.BaseLogic
@@ -11,6 +12,7 @@ import com.greentech.shared.domain.model.Lote
 import com.greentech.shared.domain.result.AppError
 import com.greentech.shared.domain.usecase.ObtenerLoteUseCase
 
+@Immutable
 data class QrLoteUiState(
     val lote: EstadoCarga<Lote> = EstadoCarga.Cargando,
     val recienCreado: Boolean = false,

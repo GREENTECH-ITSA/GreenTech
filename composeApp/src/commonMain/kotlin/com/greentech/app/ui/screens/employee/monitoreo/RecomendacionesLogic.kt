@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -11,6 +12,7 @@ import com.greentech.shared.domain.usecase.ObtenerLoteUseCase
 import com.greentech.shared.domain.model.Recomendacion
 import com.greentech.shared.domain.usecase.ObtenerRecomendacionesUseCase
 
+@Immutable
 data class RecomendacionesUiState(
     val recomendaciones: EstadoCarga<List<Recomendacion>> = EstadoCarga.Cargando,
     val lote: Lote? = null,

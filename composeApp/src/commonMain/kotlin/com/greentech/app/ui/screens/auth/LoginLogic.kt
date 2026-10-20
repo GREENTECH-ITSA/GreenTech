@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.auth
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.platform.Medicion
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
@@ -9,6 +10,7 @@ import com.greentech.shared.domain.usecase.LoginUseCase
 import com.greentech.shared.domain.validation.EmailValidator
 import com.greentech.shared.domain.validation.PasswordValidator
 
+@Immutable
 data class LoginUiState(
     val correo: String = "",
     val password: String = "",

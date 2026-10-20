@@ -1,11 +1,13 @@
 package com.greentech.app.ui.screens.admin.home
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
 import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 import com.greentech.shared.util.Fechas
 
+@Immutable
 data class AdminHomeUiState(
     val nombre: String = "",
     val fecha: String = "",

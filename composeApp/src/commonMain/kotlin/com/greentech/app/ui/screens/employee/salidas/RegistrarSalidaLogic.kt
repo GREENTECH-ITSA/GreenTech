@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.employee.salidas
 
+import kotlinx.serialization.Serializable
+import androidx.lifecycle.SavedStateHandle
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -20,6 +23,7 @@ import com.greentech.shared.domain.validation.CantidadValidator
 import com.greentech.shared.util.Fechas
 import kotlinx.datetime.LocalDate
 
+@Immutable
 data class RegistrarSalidaUiState(
     val lote: EstadoCarga<Lote> = EstadoCarga.Cargando,
     val tipo: TipoSalida? = null,
@@ -60,15 +64,23 @@ sealed interface RegistrarSalidaEvent {
     data object Ayuda : RegistrarSalidaEvent
 }
 
+/** Lo escrito en el formulario (sobrevive a la muerte del proceso). */
+@Serializable
+private data class BorradorSalida(val tipo: TipoSalida?, val cantidad: Int?, val motivo: MotivoMerma?, val fecha: LocalDate)
+
 class RegistrarSalidaLogic(
     private val loteId: String,
     private val obtenerLote: ObtenerLoteUseCase,
     private val registrarSalida: RegistrarSalidaUseCase,
     private val sesion: ObtenerSesionUseCase,
     private val recientes: RegistrosRecientes,
+    handle: SavedStateHandle,
 ) : BaseLogic<RegistrarSalidaUiState, RegistrarSalidaEvent>(RegistrarSalidaUiState()) {
 
     init {
+        conservarBorrador(handle, BorradorSalida.serializer(), { BorradorSalida(tipo, cantidad, motivo, fecha) }) {
+            copy(tipo = it.tipo, cantidad = it.cantidad, motivo = it.motivo, fecha = it.fecha)
+        }
         lanzar {
             val r = obtenerLote(loteId).aEstadoCarga()
             actualizar { copy(lote = r) }

@@ -119,7 +119,7 @@ fun ListaLotesScreen(estado: ListaLotesUiState, onEvent: (ListaLotesEvent) -> Un
                         ),
                         verticalArrangement = Arrangement.spacedBy(Dimens.md),
                     ) {
-                        item(key = "conteo") {
+                        item(key = "conteo", contentType = "conteo") {
                             FiltrosActivos(
                                 resultados = textoConteo(filtrados.size, Textos.Lotes.RESULTADO, Textos.Lotes.RESULTADOS),
                                 filtrosActivos = estado.filtrosActivos,
@@ -128,7 +128,7 @@ fun ListaLotesScreen(estado: ListaLotesUiState, onEvent: (ListaLotesEvent) -> Un
                                 accion = { BotonLeyendaSalud() },
                             )
                         }
-                        itemsIndexed(filtrados, key = { _, lote -> lote.id }) { i, lote ->
+                        itemsIndexed(filtrados, key = { _, lote -> lote.id }, contentType = { _, _ -> "filtrados" }) { i, lote ->
                             LoteCard(
                                 lote = lote,
                                 onClick = { onEvent(ListaLotesEvent.AbrirLote(lote.id)) },

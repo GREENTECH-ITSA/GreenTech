@@ -1,5 +1,8 @@
 package com.greentech.app.ui.screens.employee.lotes
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import com.greentech.app.ui.components.QrEstandar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,8 +35,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.greentech.app.platform.Permiso
 import com.greentech.app.platform.rememberEstadoPermiso
-import com.greentech.app.resources.Res
-import com.greentech.app.resources.logo_icon
 import com.greentech.app.ui.components.CheckAnimado
 import com.greentech.app.ui.components.EstadoContenido
 import com.greentech.app.ui.components.GtButton
@@ -54,17 +55,7 @@ import com.greentech.app.ui.theme.ThemeMode
 import com.greentech.app.ui.theme.tabular
 import com.greentech.shared.domain.model.Lote
 import com.greentech.shared.util.Fechas
-import io.github.alexzhirkevich.qrose.options.QrBallShape
-import io.github.alexzhirkevich.qrose.options.QrBrush
-import io.github.alexzhirkevich.qrose.options.QrFrameShape
-import io.github.alexzhirkevich.qrose.options.QrLogoPadding
-import io.github.alexzhirkevich.qrose.options.QrLogoShape
-import io.github.alexzhirkevich.qrose.options.QrPixelShape
-import io.github.alexzhirkevich.qrose.options.circle
-import io.github.alexzhirkevich.qrose.options.roundCorners
-import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
-import org.jetbrains.compose.resources.painterResource
 
 /**
  * QR del lote: tarjeta siempre blanca (escaneable también en oscuro), código grande en tnum.
@@ -100,6 +91,12 @@ fun QrLoteScreen(estado: QrLoteUiState, onEvent: (QrLoteEvent) -> Unit) {
                 val ancho = Modifier.widthIn(max = Dimens.anchoMaximo).fillMaxWidth()
                 if (estado.recienCreado) AvisoRegistrado(ancho)
                 TarjetaQr(lote, Modifier.widthIn(max = 420.dp).fillMaxWidth())
+                Text(
+                    Textos.Qr.NOTA_IMPRESION,
+                    style = GtTexto.ayuda,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
                 if (!estado.recienCreado) {
                     Text(
                         Textos.Qr.INSTRUCCION,
@@ -153,25 +150,9 @@ private fun AvisoRegistrado(modifier: Modifier) {
 @Composable
 private fun TarjetaQr(lote: Lote, modifier: Modifier) {
     val x = GreenTechTheme.colors
-    val logo = painterResource(Res.drawable.logo_icon)
-    val qr = rememberQrCodePainter(lote.codigo, x.qrTinta, x.qrAcento, logo) {
-        shapes {
-            darkPixel = QrPixelShape.roundCorners()
-            ball = QrBallShape.roundCorners(.3f)
-            frame = QrFrameShape.roundCorners(.3f)
-        }
-        colors {
-            dark = QrBrush.solid(x.qrTinta)
-            ball = QrBrush.solid(x.qrAcento)
-            frame = QrBrush.solid(x.qrAcento)
-        }
-        logo {
-            painter = logo
-            size = .22f
-            padding = QrLogoPadding.Natural(.1f)
-            shape = QrLogoShape.circle()
-        }
-    }
+    // QR estándar (negro sobre blanco, corrección Q, sin logo) con su zona de silencio de 4 módulos.
+    val qr = rememberQrCodePainter(lote.codigo, QrEstandar.opciones)
+    val silencio = LadoQr * QrEstandar.MODULOS_SILENCIO / (QrEstandar.modulos(qr) + 2 * QrEstandar.MODULOS_SILENCIO)
     // Siempre blanca con tinta oscura, también en tema oscuro, para que cualquier lector la escanee.
     Surface(modifier, shape = GtShapes.mosaico, color = x.qrFondo, contentColor = x.qrTinta) {
         Column(
@@ -179,7 +160,9 @@ private fun TarjetaQr(lote: Lote, modifier: Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.sm),
         ) {
-            Image(qr, contentDescription = "${Textos.Qr.DESCRIPCION} ${lote.codigo}", modifier = Modifier.size(260.dp))
+            Box(Modifier.size(LadoQr).background(QrEstandar.fondo).padding(silencio)) {
+                Image(qr, contentDescription = "${Textos.Qr.DESCRIPCION} ${lote.codigo}", modifier = Modifier.fillMaxSize())
+            }
             Text(lote.codigo, style = GtTexto.tituloPantalla.tabular(), color = x.qrTinta)
             Text(lote.especie.nombre, style = GtTexto.tituloTarjeta, color = x.qrTinta)
             Text(
@@ -191,6 +174,9 @@ private fun TarjetaQr(lote: Lote, modifier: Modifier) {
         }
     }
 }
+
+/** Lado del QR en pantalla, zona de silencio incluida (260 dp ≈ 4 cm en un teléfono). */
+private val LadoQr = 260.dp
 
 @Preview
 @Composable

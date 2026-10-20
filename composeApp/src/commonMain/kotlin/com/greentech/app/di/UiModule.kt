@@ -1,5 +1,6 @@
 package com.greentech.app.di
 
+import com.greentech.app.platform.MonitorConexion
 import com.greentech.app.platform.CameraScanner
 import com.greentech.app.platform.QrSaver
 import com.greentech.app.ui.notification.NotificationManager
@@ -34,6 +35,7 @@ import org.koin.dsl.module
 import com.greentech.app.ui.screens.common.IntroduccionLogic
 import com.russhwolf.settings.Settings
 import com.greentech.app.ui.core.PreferenciasUso
+import com.greentech.app.ui.core.IndiceLotesLocal
 import com.greentech.app.ui.screens.employee.monitoreo.RegistrosRecientes
 
 /** Logics (ViewModels) y servicios de la UI. */
@@ -43,6 +45,8 @@ val uiModule = module {
     single { QrSaver() }
     single { PreferenciasUso(Settings()) }
     single { RegistrosRecientes() }
+    single { IndiceLotesLocal() }
+    single { MonitorConexion() }
 
     // Comunes
     viewModelOf(::SplashLogic)
@@ -54,25 +58,25 @@ val uiModule = module {
 
     // Empleado (los que reciben loteId lo toman de parametersOf en el grafo)
     viewModelOf(::EmployeeHomeLogic)
-    viewModel { ListaLotesLogic(get()) }
+    viewModel { ListaLotesLogic(get(), get()) }
     viewModelOf(::RegistrarLoteLogic)
     viewModel { p -> QrLoteLogic(p.get(), p.get(), get(), get()) }
     viewModelOf(::EscanerQrLogic)
-    viewModel { p -> DetalleLoteLogic(p.get(), p.get(), get(), get(), get()) }
-    viewModel { p -> EtapaLogic(p.get(), get(), get(), get(), get()) }
-    viewModel { p -> ObservacionLogic(p.get(), get(), get(), get(), get()) }
-    viewModel { p -> ActividadLogic(p.get(), get(), get(), get(), get()) }
+    viewModel { p -> DetalleLoteLogic(p.get(), p.get(), get(), get(), get(), get()) }
+    viewModel { p -> EtapaLogic(p.get(), get(), get(), get(), get(), get()) }
+    viewModel { p -> ObservacionLogic(p.get(), get(), get(), get(), get(), get()) }
+    viewModel { p -> ActividadLogic(p.get(), get(), get(), get(), get(), get()) }
     viewModel { p -> CondicionesLogic(p.get(), get(), get()) }
-    viewModel { p -> AnomaliaLogic(p.get(), get(), get(), get(), get()) }
+    viewModel { p -> AnomaliaLogic(p.get(), get(), get(), get(), get(), get()) }
     viewModel { p -> RecomendacionesLogic(p.get(), get(), get()) }
     viewModel { p -> BitacoraLogic(p.get(), p.get(), get(), get()) }
-    viewModel { p -> RegistrarSalidaLogic(p.get(), get(), get(), get(), get()) }
+    viewModel { p -> RegistrarSalidaLogic(p.get(), get(), get(), get(), get(), get()) }
 
     // Administrador
     viewModelOf(::AdminHomeLogic)
     viewModelOf(::DashboardLogic)
     viewModelOf(::TrabajadoresLogic)
     viewModelOf(::AltaTrabajadorLogic)
-    viewModel { LotesLogic(get()) }
+    viewModel { LotesLogic(get(), get()) }
     viewModelOf(::AuditoriaLogic)
 }

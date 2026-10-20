@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.shared.domain.model.Lote
@@ -13,6 +14,7 @@ import com.greentech.shared.domain.result.AppResult
 import com.greentech.shared.domain.usecase.ObtenerCondicionesUseCase
 
 /** null en `condiciones` significa "sin lecturas": se muestra el estado vacío. */
+@Immutable
 data class CondicionesUiState(
     val condiciones: EstadoCarga<CondicionesLote?> = EstadoCarga.Cargando,
     /** Para el subtítulo de contexto, aunque todavía no haya lecturas. */

@@ -1,5 +1,11 @@
 package com.greentech.app.ui.screens.employee.home
 
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.launchIn
+import androidx.lifecycle.viewModelScope
+import com.greentech.app.platform.MonitorConexion
+import androidx.compose.runtime.Immutable
+import com.greentech.app.ui.core.IndiceLotesLocal
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.components.EstadoSincronizacion
 import com.greentech.app.ui.core.BaseLogic
@@ -24,6 +30,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 
+@Immutable
 data class EmployeeHomeUiState(
     val nombre: String = "",
     val fecha: String = "",
@@ -56,6 +63,8 @@ class EmployeeHomeLogic(
     private val obtenerLotes: ObtenerLotesUseCase,
     private val obtenerCondiciones: ObtenerCondicionesUseCase,
     private val obtenerDashboard: ObtenerDashboardUseCase,
+    private val indice: IndiceLotesLocal,
+    conexion: MonitorConexion,
 ) : BaseLogic<EmployeeHomeUiState, EmployeeHomeEvent>(
     EmployeeHomeUiState(
         nombre = sesion.actual()?.primerNombre.orEmpty(),
@@ -64,6 +73,11 @@ class EmployeeHomeLogic(
         sync = EstadoSincronizacion(enLinea = true, pendientes = 2, ultimaHora = Fechas.hora(Fechas.ahora())),
     ),
 ) {
+    init {
+        // El banner "Sin conexión" cambia en cuanto cambia la red (el aviso llega de otro hilo).
+        conexion.enLinea.onEach { enLinea -> actualizar { copy(sync = sync.copy(enLinea = enLinea)) } }.launchIn(viewModelScope)
+    }
+
     override fun onEvent(evento: EmployeeHomeEvent) {
         when (evento) {
             EmployeeHomeEvent.Entrar -> cargar()
@@ -87,6 +101,8 @@ class EmployeeHomeLogic(
             val nuevasAlertas = alertas.await().aEstadoCarga()
             val nuevosRecientes = recientes.await().aEstadoCarga()
             val nuevosLotes = lotes.await().aEstadoCarga()
+            // Deja listos los lotes para la consulta por QR local (sin esperar al repositorio al escanear).
+            nuevosLotes.datosOrNull?.let(indice::recordar)
             // Condiciones de la zona del primer lote activo (mini gauges del inicio).
             val loteZona = nuevosLotes.datosOrNull?.firstOrNull { it.cantidadDisponible > 0 }
             val condiciones = loteZona?.let { obtenerCondiciones(it.id).datosOrNull() }
@@ -106,7 +122,7 @@ class EmployeeHomeLogic(
     private fun sincronizar() = lanzar {
         actualizar { copy(sync = sync.copy(sincronizando = true)) }
         delay(1_500)
-        actualizar { copy(sync = EstadoSincronizacion(enLinea = true, pendientes = 0, ultimaHora = Fechas.hora(Fechas.ahora()))) }
+        actualizar { copy(sync = sync.copy(sincronizando = false, pendientes = 0, ultimaHora = Fechas.hora(Fechas.ahora()))) }
         notificarInfo(Textos.Sync.COMPLETA)
     }
 }

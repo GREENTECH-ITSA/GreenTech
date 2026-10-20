@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -25,6 +26,7 @@ enum class PeriodoBitacora(val etiqueta: String, val dias: Int?) {
     TREINTA(Textos.Bitacora.TREINTA_DIAS, 30),
 }
 
+@Immutable
 data class BitacoraUiState(
     val lote: Lote? = null,
     val eventos: EstadoCarga<List<EventoBitacora>> = EstadoCarga.Cargando,
@@ -34,13 +36,13 @@ data class BitacoraUiState(
 ) {
     val filtrosActivos: Int get() = listOf(periodo != PeriodoBitacora.COMPLETO, tipo != null).count { it }
 
-    val filtrados: List<EventoBitacora>
-        get() {
-            val desde = periodo.dias?.let { LocalDateTime(Fechas.hoy().minus(it, DateTimeUnit.DAY), LocalTime(0, 0)) }
-            return eventos.datosOrNull.orEmpty().filter { e ->
-                (desde == null || e.fecha >= desde) && (tipo == null || e.tipo == tipo)
-            }
+    // Se calcula una sola vez por estado (los estados son inmutables), no en cada recomposición.
+    val filtrados: List<EventoBitacora> by lazy(LazyThreadSafetyMode.NONE) {
+        val desde = periodo.dias?.let { LocalDateTime(Fechas.hoy().minus(it, DateTimeUnit.DAY), LocalTime(0, 0)) }
+        eventos.datosOrNull.orEmpty().filter { e ->
+            (desde == null || e.fecha >= desde) && (tipo == null || e.tipo == tipo)
         }
+    }
 }
 
 sealed interface BitacoraEvent {

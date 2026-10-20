@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.admin.personal
 
+import androidx.compose.runtime.Immutable
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.EstadoCarga
@@ -15,6 +16,7 @@ import com.greentech.shared.domain.usecase.ObtenerTrabajadoresUseCase
 
 enum class PestanaPersonal { ACTIVOS, INACTIVOS }
 
+@Immutable
 data class TrabajadoresUiState(
     val trabajadores: EstadoCarga<List<Usuario>> = EstadoCarga.Cargando,
     val busqueda: String = "",
@@ -27,11 +29,13 @@ data class TrabajadoresUiState(
     val totalActivos: Int get() = todos.count { it.activo }
     val totalInactivos: Int get() = todos.count { !it.activo }
 
-    val visibles: List<Usuario>
-        get() = todos.filter { u ->
+    // Se calcula una sola vez por estado (los estados son inmutables), no en cada recomposición.
+    val visibles: List<Usuario> by lazy(LazyThreadSafetyMode.NONE) {
+        todos.filter { u ->
             u.activo == (pestana == PestanaPersonal.ACTIVOS) &&
                 (busqueda.isBlank() || u.nombre.contains(busqueda.trim(), true) || u.correo.contains(busqueda.trim(), true))
         }
+    }
 }
 
 sealed interface TrabajadoresEvent {

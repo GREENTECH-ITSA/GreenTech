@@ -140,6 +140,8 @@ object Textos {
     object Lotes {
         const val TITULO = "Lotes"
         const val TITULO_SUPERVISION = "Supervisión de lotes"
+        const val ELIGE_LOTE_TITULO = "Elige un lote"
+        const val ELIGE_LOTE_MENSAJE = "Su detalle aparece aquí, junto a la lista."
         const val BUSCAR = "Buscar por especie o código"
         const val ESPECIE = "Especie"
         const val ETAPA = "Etapa"
@@ -187,6 +189,7 @@ object Textos {
         const val COMPARTIDO = "Elige dónde compartir el QR"
         const val DESCRIPCION = "Código QR del lote"
         const val SEMBRADO = "Sembrado el"
+        const val NOTA_IMPRESION = "Imprime el QR de al menos 3 × 3 cm"
     }
 
     object Escaner {

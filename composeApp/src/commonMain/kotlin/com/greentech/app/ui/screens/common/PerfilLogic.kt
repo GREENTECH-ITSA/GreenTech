@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.common
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.ui.core.BaseLogic
@@ -10,6 +11,7 @@ import com.greentech.shared.domain.usecase.ObtenerSesionUseCase
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
+@Immutable
 data class PerfilUiState(
     val usuario: Usuario? = null,
     val confirmarSalida: Boolean = false,
