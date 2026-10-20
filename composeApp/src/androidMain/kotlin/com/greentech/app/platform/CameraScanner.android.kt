@@ -79,6 +79,10 @@ actual class CameraScanner actual constructor() {
     private var ciclo: LifecycleOwner? = null
     private var observadorCiclo: LifecycleEventObserver? = null
 
+    /** El siguiente cuadro analizado es el primero desde que se ligó la cámara (marca qr_camara_lista). */
+    @Volatile
+    private var primerCuadro = false
+
     /** Sube con cada ligar/liberar: descarta un ligado que termine después de salir de la pantalla. */
     private var generacion = 0
 
@@ -105,6 +109,8 @@ actual class CameraScanner actual constructor() {
 
     internal fun ligar(contexto: Context, ciclo: LifecycleOwner, vista: PreviewView) {
         val miGeneracion = ++generacion
+        primerCuadro = true
+        Medicion.iniciar(Medicion.QR_CAMARA_LISTA)
         val futuro = ProcessCameraProvider.getInstance(contexto)
         futuro.addListener({
             if (miGeneracion != generacion) return@addListener
@@ -192,6 +198,10 @@ actual class CameraScanner actual constructor() {
 
     @androidx.annotation.OptIn(ExperimentalGetImage::class)
     private fun analizar(imagen: ImageProxy) {
+        if (primerCuadro) {
+            primerCuadro = false
+            Medicion.terminar(Medicion.QR_CAMARA_LISTA)
+        }
         val cuadro = imagen.image
         if (cuadro == null || onCodigo == null) {
             imagen.close()

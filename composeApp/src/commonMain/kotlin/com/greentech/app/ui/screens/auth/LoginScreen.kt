@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.auth
 
+import com.greentech.app.platform.MarcarDibujado
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -85,6 +86,8 @@ fun LoginScreen(estado: LoginUiState, onEvent: (LoginEvent) -> Unit) {
     val foco = LocalFocusManager.current
     var olvide by rememberSaveable { mutableStateOf(false) }
     var bloqMayus by remember { mutableStateOf(false) }
+    // Arranque: el Login dibujado cuenta como "pantalla completa" (timeToFullDisplay del Macrobenchmark).
+    MarcarDibujado(listo = true)
     val enviar = {
         foco.clearFocus()
         onEvent(LoginEvent.Enviar)

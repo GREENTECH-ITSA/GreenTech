@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.auth
 
+import com.greentech.app.platform.Medicion
 import com.greentech.app.ui.core.BaseLogic
 import com.greentech.app.ui.core.UiEffect
 import com.greentech.shared.domain.result.AppError
@@ -49,6 +50,7 @@ class LoginLogic(private val login: LoginUseCase) : BaseLogic<LoginUiState, Logi
         actualizar { copy(intentoEnviar = true) }
         if (!estado.puedeEnviar) return
         actualizar { copy(cargando = true) }
+        Medicion.iniciar(Medicion.LOGIN_A_INICIO)
         lanzar {
             when (val r = login(estado.correo, estado.password)) {
                 is AppResult.Exito -> {

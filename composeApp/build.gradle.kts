@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 kotlin {
@@ -69,6 +70,13 @@ kotlin {
             implementation(libs.mlkit.barcode.scanning)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.koin.android)
+            // Rendimiento: instala el Baseline/Startup Profile, splash del sistema, niveles de dispositivo,
+            // trazas de la consulta QR y JankStats (este último solo se activa en debug).
+            implementation(libs.androidx.profileinstaller)
+            implementation(libs.androidx.core.splashscreen)
+            implementation(libs.androidx.core.performance)
+            implementation(libs.androidx.tracing)
+            implementation(libs.androidx.metrics.performance)
         }
     }
 }
@@ -95,7 +103,9 @@ android {
         buildConfig = true
     }
     signingConfigs {
-        if (!propiedadesFirma.isEmpty) {
+        // Si el keystore indicado no existe (p. ej. una ruta temporal), se compila sin firmar en vez de fallar.
+        val keystoreExiste = propiedadesFirma.getProperty("storeFile")?.let { rootProject.file(it).exists() } == true
+        if (keystoreExiste) {
             create("release") {
                 storeFile = rootProject.file(propiedadesFirma.getProperty("storeFile"))
                 storePassword = propiedadesFirma.getProperty("storePassword")
@@ -133,6 +143,37 @@ compose.resources {
     generateResClass = always
 }
 
+// Firma de debug solo para las variantes que crea el plugin de Baseline Profile (benchmarkRelease y
+// nonMinifiedRelease): así se pueden instalar para medir sin tocar la firma del release real.
+androidComponents {
+    onVariants(selector().all()) { variante ->
+        if (variante.buildType == "benchmarkRelease" || variante.buildType == "nonMinifiedRelease") {
+            variante.signingConfig.setConfig(android.signingConfigs.getByName("debug"))
+        }
+    }
+}
+
+baselineProfile {
+    // El perfil se genera a mano (./gradlew :composeApp:generateBaselineProfile) y se versiona en
+    // src/androidMain/generated/baselineProfiles; el build normal no lo regenera.
+    automaticGenerationDuringBuild = false
+    saveInSrc = true
+    // Además del Baseline Profile, genera el Startup Profile (dex layout optimizado para el arranque).
+    dexLayoutOptimization = true
+}
+
+// Informes del compilador de Compose (clases estables/inestables, funciones skippable):
+//   ./gradlew :composeApp:assembleRelease -PinformesCompose
+composeCompiler {
+    if (project.hasProperty("informesCompose")) {
+        reportsDestination = layout.buildDirectory.dir("compose_reports")
+        metricsDestination = layout.buildDirectory.dir("compose_metrics")
+    }
+}
+
 dependencies {
     debugImplementation(libs.compose.ui.tooling)
+    // Detección de fugas de memoria: solo en debug (se instala sola con su ContentProvider).
+    debugImplementation(libs.leakcanary.android)
+    baselineProfile(projects.baselineprofile)
 }

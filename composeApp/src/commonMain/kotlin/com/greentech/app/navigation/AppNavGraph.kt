@@ -1,5 +1,8 @@
 package com.greentech.app.navigation
 
+import androidx.compose.runtime.LaunchedEffect
+import com.greentech.app.platform.Medicion
+import com.greentech.app.platform.AnotarPantalla
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -210,6 +213,7 @@ private fun NavGraphBuilder.pantallasEmpleado(navegador: Navegador) {
     }
     composable<AppDestination.EscanerQr> {
         val camara = koinInject<CameraScanner>()
+        LaunchedEffect(Unit) { Medicion.iniciar(Medicion.QR_ABRIR_A_DETALLE) }
         Conectar(koinViewModel<EscanerQrLogic>(), navegador) { s, on ->
             EscanerQrScreen(s, on, vistaCamara = { VistaCamara(camara, it) })
         }
@@ -367,6 +371,7 @@ private fun PanelConBarra(
     val entrada by nav.currentBackStackEntryAsState()
     val destino = entrada?.destination
     val indice = pestanas.indexOfFirst { destino.esRuta(it) }
+    AnotarPantalla(destino?.route?.substringAfterLast('.')?.substringBefore('/')?.substringBefore('?'))
     val haze = rememberHazeState()
     val espacio by animateDpAsState(if (indice >= 0) EspacioBarraInferior else 0.dp, Motion.media(), label = "espacioBarra")
     // Tocar la pestaña activa no navega: la pantalla vuelve al inicio de su lista.

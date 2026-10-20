@@ -1,5 +1,7 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import com.greentech.shared.domain.model.Lote
+import com.greentech.app.platform.Medicion
 import com.greentech.app.navigation.AppDestination
 import com.greentech.app.platform.CameraScanner
 import com.greentech.app.ui.core.BaseLogic
@@ -79,7 +81,7 @@ class EscanerQrLogic(
 
     private fun buscar(codigo: String) = lanzar {
         actualizar { copy(buscando = true, errorCodigo = null) }
-        when (val r = buscarLote(codigo)) {
+        when (val r = buscarMedido(codigo)) {
             is AppResult.Exito -> {
                 actualizar { copy(buscando = false, mostrarManual = false, codigo = "") }
                 emitir(UiEffect.Navegar(AppDestination.DetalleLote(r.datos.id)))
@@ -102,7 +104,7 @@ class EscanerQrLogic(
         actualizar { copy(detectado = true) }
         lanzar {
             val valido = LoteValidator.codigoValido(normalizado)
-            val r = if (valido) buscarLote(normalizado) else AppResult.Fallo(AppError.LoteNoEncontrado)
+            val r = if (valido) buscarMedido(normalizado) else AppResult.Fallo(AppError.LoteNoEncontrado)
             when (r) {
                 is AppResult.Exito -> {
                     delay(250) // deja ver el check antes de cambiar de pantalla
@@ -127,6 +129,13 @@ class EscanerQrLogic(
                 }
             }
         }
+    }
+
+    /** T0 (código leído o confirmado) → T1 (el repositorio devuelve el lote). T2 lo marca el Detalle. */
+    private suspend fun buscarMedido(codigo: String): AppResult<Lote> {
+        Medicion.iniciar(Medicion.QR_CONSULTA)
+        Medicion.iniciar(Medicion.QR_BUSQUEDA)
+        return buscarLote(codigo).also { Medicion.terminar(Medicion.QR_BUSQUEDA) }
     }
 
     override fun onCleared() {

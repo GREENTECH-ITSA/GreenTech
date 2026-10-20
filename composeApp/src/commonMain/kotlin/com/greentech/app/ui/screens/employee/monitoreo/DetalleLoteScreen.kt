@@ -1,5 +1,7 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import com.greentech.app.platform.MarcarDibujado
+import com.greentech.app.platform.Medicion
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
@@ -92,6 +94,8 @@ private val accionesConsulta = setOf(AccionLote.BITACORA, AccionLote.CONDICIONES
 @Composable
 fun DetalleLoteScreen(estado: DetalleLoteUiState, onEvent: (DetalleLoteEvent) -> Unit) {
     LaunchedEffect(Unit) { onEvent(DetalleLoteEvent.Entrar) }
+    // T2 de la consulta por QR: primer frame del detalle con los datos del lote.
+    MarcarDibujado(estado.lote is EstadoCarga.Listo, Medicion.QR_CONSULTA, Medicion.QR_ABRIR_A_DETALLE)
     val cuadricula = rememberLazyGridState()
     // Lo recién registrado debe verse: el detalle se desplaza hasta el resumen o hasta su acción.
     LaunchedEffect(estado.resaltado) {

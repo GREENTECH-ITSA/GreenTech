@@ -1,5 +1,7 @@
 package com.greentech.app.ui.screens.employee.home
 
+import com.greentech.app.platform.MarcarDibujado
+import com.greentech.app.platform.Medicion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -74,6 +76,7 @@ import com.greentech.shared.util.Fechas
 @Composable
 fun EmployeeHomeScreen(estado: EmployeeHomeUiState, onEvent: (EmployeeHomeEvent) -> Unit) {
     LaunchedEffect(Unit) { onEvent(EmployeeHomeEvent.Entrar) }
+    MarcarDibujado(estado.recientes is EstadoCarga.Listo, Medicion.LOGIN_A_INICIO)
     val cuadricula = rememberLazyGridState()
     AlReseleccionarPestana { cuadricula.animateScrollToItem(0) }
     GtScaffold(topBar = { GtPanelTopBar(onAyuda = { onEvent(EmployeeHomeEvent.Ayuda) }) }) { padding ->
