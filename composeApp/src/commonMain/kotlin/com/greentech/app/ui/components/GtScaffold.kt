@@ -1,5 +1,11 @@
 package com.greentech.app.ui.components
 
+import androidx.compose.ui.unit.offset
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -58,7 +64,26 @@ import kotlinx.coroutines.delay
  * Espacio que ocupa la barra inferior flotante del panel (cápsula + margen). GtScaffold lo suma
  * al padding inferior para que el contenido pueda pasar por debajo del vidrio sin quedar tapado.
  */
-val LocalEspacioInferior = compositionLocalOf { 0.dp }
+val LocalEspacioInferior = staticCompositionLocalOf<State<Dp>> { mutableStateOf(0.dp) }
+
+/**
+ * Padding del contenido más el espacio de la barra inferior. El espacio se anima al entrar o salir de
+ * las pestañas: se lee al medir (padding/contentPadding), así la animación solo vuelve a hacer layout.
+ */
+@Stable
+private class PaddingConBarra(private val base: PaddingValues, private val extra: State<Dp>) : PaddingValues {
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection) = base.calculateLeftPadding(layoutDirection)
+    override fun calculateTopPadding() = base.calculateTopPadding()
+    override fun calculateRightPadding(layoutDirection: LayoutDirection) = base.calculateRightPadding(layoutDirection)
+    override fun calculateBottomPadding() = base.calculateBottomPadding() + extra.value
+}
+
+/** Deja [extra] de espacio debajo (leído en layout). */
+private fun Modifier.espacioInferior(extra: State<Dp>): Modifier = layout { medible, restricciones ->
+    val abajo = extra.value.roundToPx()
+    val colocable = medible.measure(restricciones.offset(vertical = -abajo))
+    layout(colocable.width, colocable.height + abajo) { colocable.place(0, 0) }
+}
 
 /** true cuando el contenido ya se desplazó: la barra superior pasa de transparente a vidrio. */
 internal val LocalBarraDesplazada = compositionLocalOf { false }
@@ -80,22 +105,16 @@ fun GtScaffold(
     val desplazada by remember { derivedStateOf { comportamiento.state.contentOffset < -1f } }
     val haze = rememberHazeState()
     val extra = LocalEspacioInferior.current
-    val direccion = LocalLayoutDirection.current
     Scaffold(
         modifier = modifier.nestedScroll(comportamiento.nestedScrollConnection),
         topBar = {
             CompositionLocalProvider(LocalHazeState provides haze, LocalBarraDesplazada provides desplazada) { topBar() }
         },
         bottomBar = { CompositionLocalProvider(LocalHazeState provides haze) { barraInferior() } },
-        floatingActionButton = { Box(Modifier.padding(bottom = extra)) { botonFlotante() } },
+        floatingActionButton = { Box(Modifier.espacioInferior(extra)) { botonFlotante() } },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
-        val conBarra = PaddingValues(
-            start = padding.calculateStartPadding(direccion),
-            top = padding.calculateTopPadding(),
-            end = padding.calculateEndPadding(direccion),
-            bottom = padding.calculateBottomPadding() + extra,
-        )
+        val conBarra = remember(padding, extra) { PaddingConBarra(padding, extra) }
         Box(Modifier.fillMaxSize().fuenteVidrio(haze)) { contenido(conBarra) }
     }
 }

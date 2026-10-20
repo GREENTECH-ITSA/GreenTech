@@ -1,5 +1,6 @@
 package com.greentech.app.ui.components
 
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -105,7 +106,8 @@ fun GtBottomBar(
         ) {
             BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = Dimens.sm)) {
                 val anchoItem = maxWidth / items.size.coerceAtLeast(1)
-                val desplazamiento by animateDpAsState(
+                // El desplazamiento se lee en la fase de layout (offset { }): mover la pill no recompone la barra.
+                val desplazamiento = animateDpAsState(
                     anchoItem * seleccionado.coerceAtLeast(0),
                     Motion.resorte(),
                     label = "indicadorBarra",
@@ -113,7 +115,7 @@ fun GtBottomBar(
                 if (seleccionado >= 0) {
                     Box(
                         Modifier
-                            .offset(x = desplazamiento)
+                            .offset { IntOffset(desplazamiento.value.roundToPx(), 0) }
                             .width(anchoItem)
                             .fillMaxHeight()
                             .padding(vertical = Dimens.sm, horizontal = Dimens.xxs)

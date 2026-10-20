@@ -27,7 +27,7 @@ class PreferenciasApariencia(private val settings: Settings? = null) {
         private set
 
     init {
-        Motion.reducir = reducirAnimaciones
+        Motion.reducirPorPreferencia(reducirAnimaciones)
     }
 
     fun cambiarModo(nuevo: ThemeMode) {
@@ -37,7 +37,7 @@ class PreferenciasApariencia(private val settings: Settings? = null) {
 
     fun cambiarReducirAnimaciones(activo: Boolean) {
         reducirAnimaciones = activo
-        Motion.reducir = activo
+        Motion.reducirPorPreferencia(activo)
         settings?.putBoolean(CLAVE_REDUCIR, activo)
     }
 

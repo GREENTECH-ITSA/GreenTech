@@ -4,9 +4,7 @@ import com.greentech.app.platform.MarcarDibujado
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -45,6 +43,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
+import com.greentech.app.platform.LocalNivelRendimiento
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -238,26 +238,26 @@ private fun MarcaAnimada() {
 
 /**
  * Fondo orgánico: 3 manchas grandes y difusas (brandGreen 18 %, secondary 14 %, tertiary 10 %) que
- * se mueven muy lento (ciclo de 20 s). Con "Reducir animaciones" quedan quietas.
+ * se mueven muy lento (ciclo de 20 s). Con "Reducir animaciones" o en equipos de nivel bajo quedan quietas.
+ *
+ * Rendimiento: la fase se lee solo en la fase de dibujo (el Canvas se redibuja, no se recompone) y el
+ * bucle arranca después del primer frame para no competir con el arranque. Al salir del Login la
+ * animación se detiene sola (deja la composición).
  */
 @Composable
 private fun FondoOrganico(modifier: Modifier) {
     val verde = GreenTechTheme.colors.brandGreen.copy(alpha = 0.18f)
     val secundario = MaterialTheme.colorScheme.secondary.copy(alpha = 0.14f)
     val terciario = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f)
-    val fase = if (Motion.reducir) {
-        0f
-    } else {
-        val t by rememberInfiniteTransition(label = "fondoLogin").animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(20_000, easing = LinearEasing), RepeatMode.Restart),
-            label = "fase",
-        )
-        t
+    val fase = remember { Animatable(0f) }
+    val animar = !Motion.reducir && !LocalNivelRendimiento.current.bajo
+    LaunchedEffect(animar) {
+        if (!animar) return@LaunchedEffect
+        withFrameNanos { }
+        fase.animateTo(1f, infiniteRepeatable(tween(20_000, easing = LinearEasing), RepeatMode.Restart))
     }
     Canvas(modifier) {
-        val a = fase * 2 * PI.toFloat()
+        val a = fase.value * 2 * PI.toFloat()
         fun mancha(color: Color, cx: Float, cy: Float, radio: Float) {
             val centro = Offset(cx, cy)
             drawCircle(

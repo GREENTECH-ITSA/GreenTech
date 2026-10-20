@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import com.greentech.app.platform.LocalNivelRendimiento
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -223,13 +224,13 @@ private fun Visor(
     detectado: Boolean = false,
     vistaCamara: @Composable (Modifier) -> Unit = {},
 ) {
-    val respiracion = if (Motion.reducir) {
-        1f
+    // La respiración se lee solo al dibujar el marco (no recompone la vista de cámara). Sin bucle en nivel bajo.
+    val respiracion = if (Motion.reducir || LocalNivelRendimiento.current.bajo) {
+        null
     } else {
-        val v by rememberInfiniteTransition(label = "visor").animateFloat(
+        rememberInfiniteTransition(label = "visor").animateFloat(
             0.92f, 1f, infiniteRepeatable(tween(2_400), RepeatMode.Reverse), label = "respiracion",
         )
-        v
     }
     val acento = MaterialTheme.colorScheme.primary
     val marco by animateColorAsState(if (detectado) acento else GreenTechTheme.colors.sobreCamara, Motion.rapida(), label = "marco")
@@ -243,7 +244,7 @@ private fun Visor(
             Icon(IconosModulo.qr, null, tint = marco.copy(alpha = 0.08f), modifier = Modifier.size(140.dp))
         }
         Canvas(Modifier.fillMaxSize().padding(Dimens.esquinaVisor)) {
-            val lado = size.minDimension * 0.86f * respiracion
+            val lado = size.minDimension * 0.86f * (respiracion?.value ?: 1f)
             val ox = (size.width - lado) / 2
             val oy = (size.height - lado) / 2 - 24.dp.toPx()
             val r = 22.dp.toPx()

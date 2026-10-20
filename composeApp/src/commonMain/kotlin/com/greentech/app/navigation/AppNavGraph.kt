@@ -373,7 +373,8 @@ private fun PanelConBarra(
     val indice = pestanas.indexOfFirst { destino.esRuta(it) }
     AnotarPantalla(destino?.route?.substringAfterLast('.')?.substringBefore('/')?.substringBefore('?'))
     val haze = rememberHazeState()
-    val espacio by animateDpAsState(if (indice >= 0) EspacioBarraInferior else 0.dp, Motion.media(), label = "espacioBarra")
+    // Se pasa el State (no el valor): el contenido solo vuelve a hacer layout mientras se anima.
+    val espacio = animateDpAsState(if (indice >= 0) EspacioBarraInferior else 0.dp, Motion.media(), label = "espacioBarra")
     // Tocar la pestaña activa no navega: la pantalla vuelve al inicio de su lista.
     var reselecciones by remember { mutableIntStateOf(0) }
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {

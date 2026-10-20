@@ -17,7 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
+import com.greentech.app.platform.LocalNivelRendimiento
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -55,7 +58,8 @@ fun Modifier.fuenteVidrio(estado: HazeState?): Modifier = if (estado != null) ha
  *
  * - Desenfoque real de 22 dp (Haze) con tinte surface al 78 % (claro) / 70 % (oscuro).
  * - Borde de 1 dp blanco 50 % (claro) / 8 % (oscuro) y brillo superior sutil en claro.
- * - Sin desenfoque disponible (Android < 12) o sin fuente: surface al 94 %.
+ * - Sin desenfoque disponible (Android < 12), sin fuente, en equipos de nivel bajo o con "Reducir
+ *   animaciones": surface al 94 % (el desenfoque real cuesta GPU en cada frame).
  * - El texto encima va en onSurface (garantiza 4.5:1 sobre cualquier fondo; ver ContrasteTest).
  * - Los gestos (clickable, toggleable…) van en el contenido, no en [modifier]: el efecto de desenfoque
  *   intercepta los toques que lleguen al contenedor.
@@ -75,7 +79,8 @@ fun GlassSurface(
 ) {
     val colores = GreenTechTheme.colors
     val superficie = MaterialTheme.colorScheme.surface
-    val usarDesenfoque = fuente != null && desenfoqueDisponible
+    val nivel = LocalNivelRendimiento.current
+    val usarDesenfoque = fuente != null && desenfoqueDisponible && !nivel.bajo && !Motion.reducir
     val estilo = remember(colores.vidrioTinte, superficie) {
         HazeBlurStyle {
             blurRadius(RadioVidrio)
@@ -90,7 +95,8 @@ fun GlassSurface(
     }
     Box(
         modifier
-            .then(if (elevada) Modifier.shadow(2.dp, shape, clip = false) else Modifier)
+            // En nivel bajo, sin sombra (sombras mínimas).
+            .then(if (elevada && !nivel.bajo) Modifier.shadow(2.dp, shape, clip = false) else Modifier)
             .clip(shape)
             .then(
                 if (usarDesenfoque) Modifier.hazeBlur(HazeInput.Sources(fuente), estilo)
@@ -125,13 +131,23 @@ fun RegistrarModal() {
     }
 }
 
-/** Desenfoque del contenido de fondo mientras haya un modal abierto (scrim con desenfoque). */
+/**
+ * Desenfoque del contenido de fondo mientras haya un modal abierto (scrim con desenfoque).
+ * El radio animado se lee en la fase de dibujo (graphicsLayer): abrir una hoja no recompone la app.
+ * En equipos de nivel bajo no se desenfoca (solo queda el scrim).
+ */
 @Composable
 fun Modifier.desenfoqueModal(velo: VeloModal): Modifier {
-    val radio: Dp by animateDpAsState(
-        if (velo.abiertos > 0 && desenfoqueDisponible) 12.dp else 0.dp,
-        Motion.lenta(),
-        label = "veloModal",
-    )
-    return if (radio > 0.dp) blur(radio) else this
+    val activo = velo.abiertos > 0 && desenfoqueDisponible && !LocalNivelRendimiento.current.bajo
+    val radio = animateDpAsState(if (activo) 12.dp else 0.dp, Motion.lenta(), label = "veloModal")
+    return graphicsLayer {
+        val px = radio.value.toPx()
+        if (px > 0f) {
+            renderEffect = BlurEffect(px, px, TileMode.Clamp)
+            clip = true
+        } else {
+            renderEffect = null
+            clip = false
+        }
+    }
 }

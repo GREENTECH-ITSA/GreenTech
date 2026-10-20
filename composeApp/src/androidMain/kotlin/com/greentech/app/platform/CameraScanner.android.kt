@@ -29,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.mlkit.common.sdkinternal.MlKitContext
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -65,6 +66,8 @@ actual class CameraScanner actual constructor() {
     actual val zoom: StateFlow<Float> = _zoom.asStateFlow()
 
     private val lector by lazy {
+        // El MlKitInitProvider está quitado del manifest: ML Kit se inicializa aquí, al abrir Escanear.
+        MlKitContext.initializeIfNeeded(contexto)
         BarcodeScanning.getClient(BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build())
     }
     private val hiloAnalisis: ExecutorService by lazy { Executors.newSingleThreadExecutor() }

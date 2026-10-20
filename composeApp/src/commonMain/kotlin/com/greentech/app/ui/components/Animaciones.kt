@@ -19,6 +19,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.greentech.app.platform.LocalNivelRendimiento
 import com.greentech.app.ui.theme.Motion
 import com.greentech.app.ui.theme.tabular
 import com.greentech.app.util.formatoDecimal
@@ -50,10 +51,13 @@ fun Modifier.entradaEscalonada(indice: Int): Modifier {
     var yaEntro by rememberSaveable { mutableStateOf(false) }
     val progreso = remember { Animatable(if (yaEntro || Motion.reducir) 1f else 0f) }
     val desplazamiento = with(LocalDensity.current) { 8.dp.toPx() }
+    // En nivel bajo la entrada es más corta: menos escalones y la mitad de duración.
+    val bajo = LocalNivelRendimiento.current.bajo
     LaunchedEffect(Unit) {
         if (progreso.value < 1f) {
-            delay(minOf(indice, Motion.ESCALON_MAXIMO) * Motion.ESCALON_LISTA)
-            progreso.animateTo(1f, Motion.lenta())
+            val escalones = if (bajo) Motion.ESCALON_MAXIMO / 2 else Motion.ESCALON_MAXIMO
+            delay(minOf(indice, escalones) * Motion.ESCALON_LISTA)
+            progreso.animateTo(1f, if (bajo) Motion.rapida() else Motion.lenta())
         }
         yaEntro = true
     }

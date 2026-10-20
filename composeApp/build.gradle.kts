@@ -14,6 +14,9 @@ kotlin {
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+            // El nombre por defecto ("GreenTech:composeApp") no es un nombre de archivo válido en Windows y
+            // rompe los informes del compilador de Compose.
+            if (project.hasProperty("informesCompose")) moduleName.set("composeApp")
         }
     }
 
@@ -165,6 +168,7 @@ baselineProfile {
 // Informes del compilador de Compose (clases estables/inestables, funciones skippable):
 //   ./gradlew :composeApp:assembleRelease -PinformesCompose
 composeCompiler {
+    stabilityConfigurationFiles.add(layout.projectDirectory.file("compose-stability.conf"))
     if (project.hasProperty("informesCompose")) {
         reportsDestination = layout.buildDirectory.dir("compose_reports")
         metricsDestination = layout.buildDirectory.dir("compose_metrics")

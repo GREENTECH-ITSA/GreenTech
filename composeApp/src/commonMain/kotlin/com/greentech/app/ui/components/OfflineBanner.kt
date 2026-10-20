@@ -1,5 +1,6 @@
 package com.greentech.app.ui.components
 
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -24,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -54,13 +54,14 @@ fun OfflineBanner(estado: EstadoSincronizacion, onSincronizar: () -> Unit, modif
         else -> GreenTechTheme.colors.exito
     }
     // El ícono gira solo mientras sincroniza y si no se redujeron las animaciones.
-    val angulo = if (estado.sincronizando && !Motion.reducir) {
-        val giro by rememberInfiniteTransition(label = "sync").animateFloat(
+    // El ángulo se lee en la fase de dibujo (graphicsLayer): el giro no recompone el banner.
+    val girar = estado.sincronizando && !Motion.reducir
+    val angulo = if (girar) {
+        rememberInfiniteTransition(label = "sync").animateFloat(
             0f, 360f, infiniteRepeatable(tween(1_000, easing = LinearEasing), RepeatMode.Restart), label = "giro",
         )
-        giro
     } else {
-        0f
+        null
     }
     GtCard(
         modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
@@ -76,7 +77,7 @@ fun OfflineBanner(estado: EstadoSincronizacion, onSincronizar: () -> Unit, modif
                 },
                 contentDescription = null,
                 tint = colores.contenido,
-                modifier = Modifier.size(Dimens.icono).then(if (estado.sincronizando) Modifier.rotate(-angulo) else Modifier),
+                modifier = Modifier.size(Dimens.icono).then(if (angulo != null) Modifier.graphicsLayer { rotationZ = -angulo.value } else Modifier),
             )
             Spacer(Modifier.width(Dimens.md))
             Column(Modifier.weight(1f)) {

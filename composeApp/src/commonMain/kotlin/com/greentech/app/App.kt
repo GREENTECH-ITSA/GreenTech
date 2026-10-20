@@ -27,6 +27,11 @@ import com.greentech.app.ui.theme.esOscuro
 import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.rememberHazeState
 import org.koin.compose.koinInject
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.greentech.app.platform.LocalNivelRendimiento
+import com.greentech.app.platform.animacionesDelSistemaDesactivadas
+import com.greentech.app.platform.detectarNivelRendimiento
+import com.greentech.app.ui.theme.Motion
 
 /**
  * Raíz de la app: preferencias de apariencia + tema + grafo de navegación + notificaciones encima.
@@ -35,7 +40,13 @@ import org.koin.compose.koinInject
 @Composable
 fun App() {
     val apariencia = remember { PreferenciasApariencia(Settings()) }
-    CompositionLocalProvider(LocalApariencia provides apariencia) {
+    val nivel = remember { detectarNivelRendimiento() }
+    // La escala de animación del sistema puede cambiar con la app en segundo plano: se revisa al volver.
+    LifecycleResumeEffect(Unit) {
+        Motion.reducirPorSistema(animacionesDelSistemaDesactivadas())
+        onPauseOrDispose { }
+    }
+    CompositionLocalProvider(LocalApariencia provides apariencia, LocalNivelRendimiento provides nivel) {
         GreenTechTheme(modo = apariencia.modo) {
             AjustarBarrasSistema(oscuro = apariencia.modo.esOscuro() || BarrasSistema.pantallasOscuras > 0)
             val notificaciones = koinInject<NotificationManager>()

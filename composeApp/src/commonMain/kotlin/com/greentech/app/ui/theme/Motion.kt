@@ -30,8 +30,25 @@ object Motion {
     const val CHECK_GUARDADO = 600L
     const val ESCALA_PRESION = 0.97f
 
-    /** Preferencia "Reducir animaciones". La escribe [PreferenciasApariencia]. */
+    /**
+     * Preferencia "Reducir animaciones" o animaciones desactivadas en el sistema (escala de animación 0).
+     * La escriben [PreferenciasApariencia] y App (al volver a primer plano se revisa el sistema).
+     */
     var reducir by mutableStateOf(false)
+        private set
+
+    private var preferencia = false
+    private var sistema = false
+
+    fun reducirPorPreferencia(activo: Boolean) {
+        preferencia = activo
+        reducir = preferencia || sistema
+    }
+
+    fun reducirPorSistema(activo: Boolean) {
+        sistema = activo
+        reducir = preferencia || sistema
+    }
 
     /** Curva "emphasized" de M3 para tweens. */
     val easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)

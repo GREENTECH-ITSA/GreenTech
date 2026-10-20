@@ -1,5 +1,8 @@
 package com.greentech.app.ui.components
 
+import com.greentech.app.platform.LocalNivelRendimiento
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.runtime.State
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -33,26 +36,37 @@ import com.greentech.app.ui.theme.Motion
 
 private const val DURACION_BRILLO = 1_200
 
-/** Brillo que recorre los skeletons. Con "Reducir animaciones" queda estático. */
+/**
+ * Brillo que recorre los skeletons. Con "Reducir animaciones" o en equipos de nivel bajo queda estático.
+ * La posición del brillo se lee en la fase de dibujo ([brillo]): el skeleton no se recompone en cada frame.
+ */
 @Composable
-private fun brilloSkeleton(): Brush {
-    val base = GreenTechTheme.colors.skeleton
-    val brillo = GreenTechTheme.colors.skeletonBrillo
-    if (Motion.reducir) return SolidColor(base)
-    val transicion = rememberInfiniteTransition(label = "skeleton")
-    val x by transicion.animateFloat(
+private fun posicionBrillo(): State<Float>? {
+    if (Motion.reducir || LocalNivelRendimiento.current.bajo) return null
+    return rememberInfiniteTransition(label = "skeleton").animateFloat(
         initialValue = -600f,
         targetValue = 1_400f,
         animationSpec = infiniteRepeatable(tween(DURACION_BRILLO, easing = LinearEasing), RepeatMode.Restart),
         label = "brillo",
     )
-    return Brush.linearGradient(listOf(base, brillo, base), start = Offset(x, 0f), end = Offset(x + 500f, 0f))
+}
+
+/** Fondo del skeleton: color base o el degradado del brillo en la posición actual. */
+@Composable
+private fun Modifier.brillo(x: State<Float>?): Modifier {
+    val base = GreenTechTheme.colors.skeleton
+    val brillo = GreenTechTheme.colors.skeletonBrillo
+    if (x == null) return background(base)
+    return drawBehind {
+        val p = x.value
+        drawRect(Brush.linearGradient(listOf(base, brillo, base), start = Offset(p, 0f), end = Offset(p + 500f, 0f)))
+    }
 }
 
 /** Lista de tarjetas "fantasma" con brillo suave mientras se cargan los datos de una lista. */
 @Composable
 fun LoadingSkeleton(modifier: Modifier = Modifier, tarjetas: Int = 4) {
-    val brush = brilloSkeleton()
+    val brillo = posicionBrillo()
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -67,13 +81,13 @@ fun LoadingSkeleton(modifier: Modifier = Modifier, tarjetas: Int = 4) {
                 verticalArrangement = Arrangement.spacedBy(Dimens.md),
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.md)) {
-                    Box(Modifier.size(48.dp).clip(GtShapes.campo).background(brush))
+                    Box(Modifier.size(48.dp).clip(GtShapes.campo).brillo(brillo))
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        Box(Modifier.fillMaxWidth(0.6f).height(16.dp).clip(GtShapes.pastilla).background(brush))
-                        Box(Modifier.fillMaxWidth(0.35f).height(16.dp).clip(GtShapes.pastilla).background(brush))
+                        Box(Modifier.fillMaxWidth(0.6f).height(16.dp).clip(GtShapes.pastilla).brillo(brillo))
+                        Box(Modifier.fillMaxWidth(0.35f).height(16.dp).clip(GtShapes.pastilla).brillo(brillo))
                     }
                 }
-                Box(Modifier.fillMaxWidth().height(8.dp).clip(GtShapes.pastilla).background(brush))
+                Box(Modifier.fillMaxWidth().height(8.dp).clip(GtShapes.pastilla).brillo(brillo))
             }
         }
     }
@@ -82,5 +96,5 @@ fun LoadingSkeleton(modifier: Modifier = Modifier, tarjetas: Int = 4) {
 /** Bloque con brillo para esqueletos a la medida (mosaicos, resúmenes). */
 @Composable
 fun SkeletonBloque(modifier: Modifier) {
-    Box(modifier.clip(GtShapes.mosaico).background(brilloSkeleton()))
+    Box(modifier.clip(GtShapes.mosaico).brillo(posicionBrillo()))
 }
