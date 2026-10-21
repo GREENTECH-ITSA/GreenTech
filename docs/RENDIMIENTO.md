@@ -13,7 +13,7 @@ qué se cambió, los resultados y el cumplimiento de los requisitos no funcional
 | Perfil | Equipo | Uso |
 |---|---|---|
 | Gama media (antes y después) | Xiaomi 22101320G, Android 12 (API 31), 8 GB, 120 Hz | Arranque, frames, memoria, cámara y 40 consultas QR |
-| API reciente (después) | Emulador Pixel 7, Android 14 (API 34), 2 GB, 4 vCPU, 1080 × 2400 | Generación del Baseline Profile y arranque; frames y memoria pendientes |
+| API reciente (después) | Emulador Pixel 7, Android 14 (API 34), 2 GB, 4 vCPU, 1080 × 2400 | Generación del Baseline Profile, arranque, frames, memoria y cámara |
 | Gama baja (después) | Emulador "GamaBaja_API30", Android 11 (API 30), 2 GB, 2 vCPU, 360 × 640 dp | Arranque, frames, memoria y las 40 consultas QR |
 | Compatibilidad | Emulador "GamaBaja_API26", Android 8.0 (API 26), 2 GB, 2 vCPU | Verificación funcional, lectura de QR, monkey, LeakCanary |
 
@@ -64,22 +64,25 @@ Mediana / P90 salvo que se indique. "—" = no se midió en ese equipo.
 | Caliente: primer frame | 104 / 126 ms | 115 / 127 ms | 150 / 262 ms | 405 / 672 ms (n = 5) |
 | Caliente: Login visible | 1427 / 1442 ms | 1419 / 1434 ms | 1392 / 1481 ms | 1585 / 1769 ms (n = 5) |
 
+El arranque en API 34 se midió mientras corría a la vez el emulador de gama baja (PC saturada): Macrobenchmark descartó iteraciones (n = 5–6). Hay que repetirlo con el emulador solo.
+
 Del Login a ~1.6 s, **1.3 s son la espera fija del splash animado** (`SplashLogic.DURACION_MS`, parte del diseño). El arranque real hasta el primer frame es de 0.36 s en el teléfono y 0.5 s en gama baja.
 
 ### 2.2 Frames por escenario
 
-| Escenario | Teléfono antes (120 Hz) | Teléfono después (120 Hz) | Gama baja API 30 (después, 60 Hz) |
-|---|---|---|---|
-| Scroll de la lista de lotes | CPU por frame P50 4.7 / P90 5.6 ms; retraso P95 7.1 ms (≈ 5–10 % lentos) | **7.4 % lentos**; CPU P50 6.4 / P90 8.0 ms | 98.9 % lentos (CPU > 16.7 ms); CPU P50 58 / P90 73 ms |
-| Abrir el Detalle y regresar | — | **21.5 % lentos**; CPU P50 6.1 / P90 8.1 ms | 92.7 % lentos; CPU P50 52 / P90 69 ms. En una corrida con menos carga: P50 12 / P90 27 ms |
-| Login → Inicio | — | 25.2 % lentos; total 2470 / 2596 ms (P95 2644)¹ | pendiente² |
-| Dashboard del administrador (gráficas + scroll) | — | 44.0 % lentos; CPU P50 5.8 / P90 11.2 ms | pendiente² |
-| Abrir Escanear (inicio de la cámara) | retraso P90 −1.4 / P95 9.6 ms (≈ 5–10 % lentos) | 8.7 % lentos; CPU P50 6.6 / P90 10.6 ms | 73.3 % lentos; CPU P50 29 / P90 70 ms |
-| Frame más largo | — | 131 ms (Login → Inicio) | 572 ms (scroll) |
+| Escenario | Teléfono antes (120 Hz) | Teléfono después (120 Hz) | Gama baja API 30 (después, 60 Hz) | API 34 emulado (después, 60 Hz) |
+|---|---|---|---|---|
+| Scroll de la lista de lotes | CPU por frame P50 4.7 / P90 5.6 ms; retraso P95 7.1 ms (≈ 5–10 % lentos) | **7.4 % lentos**; CPU P50 6.4 / P90 8.0 ms | 98.9 % lentos (CPU > 16.7 ms); CPU P50 58 / P90 73 ms | 73.4 % lentos; CPU P50 20 / P90 34 ms |
+| Abrir el Detalle y regresar | — | **21.5 % lentos**; CPU P50 6.1 / P90 8.1 ms | 92.7 % lentos; CPU P50 52 / P90 69 ms. En una corrida con menos carga: P50 12 / P90 27 ms | 78.4 % lentos; CPU P50 20 / P90 27 ms |
+| Login → Inicio | — | 25.2 % lentos; total 2470 / 2596 ms (P95 2644)¹ | pendiente² | 92.7 % lentos; total 2454 / 2612 ms¹ |
+| Dashboard del administrador (gráficas + scroll) | — | 44.0 % lentos; CPU P50 5.8 / P90 11.2 ms | pendiente² | 66.2 % lentos; CPU P50 20 / P90 33 ms |
+| Abrir Escanear (inicio de la cámara) | retraso P90 −1.4 / P95 9.6 ms (≈ 5–10 % lentos) | 8.7 % lentos; CPU P50 6.6 / P90 10.6 ms | 73.3 % lentos; CPU P50 29 / P90 70 ms | 55.5 % lentos; CPU P50 9.4 / P90 31 ms |
+| Frame más largo | — | 131 ms (Login → Inicio) | 572 ms (scroll) | 295 ms |
 
 "Lento" significa:
 - **Teléfono:** el frame no se entregó a tiempo (`frameOverrunMs` > 0; presupuesto de 8.3 ms a 120 Hz).
 - **API 30:** CPU > 16.7 ms (Macrobenchmark no da `frameOverrun` antes de API 31).
+- **API 34 emulado:** `frameOverrunMs` > 0. El emulador renderiza 1080 × 2400 con GPU emulada, así que sus frames no representan un Pixel real; sirven para confirmar que los recorridos funcionan y para comparar contra futuras corridas en el mismo emulador.
 
 ¹ Incluye los 600–900 ms de latencia simulada del repositorio Fake de login y las cargas del Inicio.
 ² En el emulador de gama baja la UI no respondió a tiempo en estas dos pruebas (sin cierres de la app).
@@ -97,6 +100,7 @@ Marcas de `Medicion.kt` registradas en logcat:
 | T0 → T2 (código → Detalle dibujado) | 1660 ms (n = 1)³ | **80 / 90 ms, P95 97**, máx. 118 | **230 / 702 ms, P95 849**, máx. 1378 |
 | Cámara lista (ligar → primer cuadro analizado) | 441 / 509 ms | 482 / 496 ms, P95 508 | 525 / 844 ms, P95 1033, máx. 8171 |
 | Decodificación de un cuadro | — | — | 90 ms; P95 99 (Android 8, LecturaQrTest) |
+| Cámara lista en API 34 emulado | — | 550 / 870 ms, P95 1107 (n = 10) | — |
 
 ³ Antes, la consulta esperaba al repositorio Fake (600–900 ms) y el Detalle volvía a pedir el lote. En Android 8, antes: T0→T2 = 1795 ms.
 
@@ -111,11 +115,11 @@ Las consultas por código en Android 8 se verificaron funcionalmente (sección 7
 
 ### 2.4 Memoria
 
-| Momento | Teléfono antes | Teléfono después | Gama baja API 30 (después) |
-|---|---|---|---|
-| Inicio en reposo | RSS anónima 42.4 MB; heap 8.2 MB | RSS anónima 51.3 MB; heap 16.3 MB (n = 1)⁴ | RSS anónima 57.9–59.5 MB; heap 10.4–11.4 MB |
-| Dashboard | — | RSS anónima 40.2 MB; heap 8.9 MB | pendiente² |
-| Emblema decodificado | 4 MB (1024 px) | 1 MB (512 px) | 1 MB |
+| Momento | Teléfono antes | Teléfono después | Gama baja API 30 (después) | API 34 emulado (después) |
+|---|---|---|---|---|
+| Inicio en reposo | RSS anónima 42.4 MB; heap 8.2 MB | RSS anónima 51.3 MB; heap 16.3 MB (n = 1)⁴ | RSS anónima 57.9–59.5 MB; heap 10.4–11.4 MB | RSS anónima 52.1 MB; heap 7.1 MB |
+| Dashboard | — | RSS anónima 40.2 MB; heap 8.9 MB | pendiente² | RSS anónima 53.7 MB; heap 7.9 MB |
+| Emblema decodificado | 4 MB (1024 px) | 1 MB (512 px) | 1 MB | 1 MB |
 
 ⁴ Una sola muestra válida; el heap de Java varía mucho según cuándo pasa el recolector. Hay que repetirla.
 
@@ -275,7 +279,7 @@ Otros cambios visibles que pide la tarea, en todos los equipos:
 | Sin red (Android 8, Wi-Fi y datos apagados) | El banner muestra "Sin conexión · 2 registros por enviar" de inmediato; arranque, sesión y Escanear funcionan |
 | Lint (`:composeApp:lintRelease`) | **0 errores**, 25 advertencias (ver §9) |
 | `./gradlew :composeApp:assembleRelease` | Compila (APK universal + por ABI) |
-| Frames > 700 ms (congelamientos) | Ninguno; máximo 131 ms en el teléfono y 572 ms en el emulador de gama baja |
+| Frames > 700 ms (congelamientos) | Ninguno; máximo 131 ms en el teléfono, 295 ms en API 34 y 572 ms en el emulador de gama baja |
 
 Bug del sistema encontrado en Android 8.0 (no de la app):
 
@@ -316,7 +320,7 @@ Resultado: _(anotar aquí)_
 - **Splash de 1.3 s:**
   - El splash animado de Compose espera 1.3 s fijos (diseño). Por eso el Login aparece a ~1.6 s aunque el primer frame llega a ~0.4 s.
   - Bajarlo a 0.8 s (lo que dura su animación) cumpliría la meta de 1.5 s. Es un cambio visible: decisión del equipo.
-- **Pendiente – API 34:** faltan los recorridos (frames y memoria del Dashboard) y la apertura de la cámara en el emulador API 34. El arranque ya está medido.
+- **Pendiente – arranque en API 34:** repetir el arranque con el emulador solo (se midió con la PC saturada, n = 5–6).
 - **Pendiente – gama baja:** en el emulador API 30 faltan Login → Inicio y Dashboard. Conviene repetir todo en un teléfono real de entrada.
 - **Pendiente – uso prolongado:** 30 minutos navegando y escaneando con el Memory Profiler (RNF 3.3.3).
 - **Pendiente – memoria del teléfono:** repetir "Inicio en reposo" (solo hubo una muestra válida).
