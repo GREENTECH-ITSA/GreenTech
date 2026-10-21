@@ -113,8 +113,14 @@ fun EscanerQrScreen(
     vistaCamara: @Composable (Modifier) -> Unit = {},
 ) {
     val permiso = rememberEstadoPermiso(Permiso.CAMARA)
-    var explicarPermiso by rememberSaveable {
-        mutableStateOf(estado.camaraReal && !permiso.concedido && !permiso.negadoPermanente)
+    // Al entrar sin permiso se muestra directo el diálogo del sistema (un toque para permitir). Solo una vez
+    // por visita: si lo niega, queda la tarjeta "Sin acceso a la cámara" con su botón.
+    var yaSePidio by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (estado.camaraReal && !permiso.concedido && !permiso.negadoPermanente && !yaSePidio) {
+            yaSePidio = true
+            permiso.solicitar()
+        }
     }
     val camaraActiva = estado.camaraReal && permiso.concedido
     val haptica = LocalHapticFeedback.current
@@ -174,20 +180,6 @@ fun EscanerQrScreen(
           }
         }
         if (estado.mostrarManual) HojaCodigoManual(estado, onEvent)
-        if (explicarPermiso) {
-            ConfirmSheet(
-                titulo = Textos.Permisos.CAMARA_TITULO,
-                mensaje = Textos.Permisos.CAMARA_MENSAJE,
-                textoConfirmar = Textos.Permisos.PERMITIR,
-                textoCancelar = Textos.Permisos.AHORA_NO,
-                icono = Icons.Outlined.PhotoCamera,
-                onConfirmar = {
-                    explicarPermiso = false
-                    permiso.solicitar()
-                },
-                onCancelar = { explicarPermiso = false },
-            )
-        }
     }
 }
 

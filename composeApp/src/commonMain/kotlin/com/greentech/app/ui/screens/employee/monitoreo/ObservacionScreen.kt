@@ -65,7 +65,6 @@ import com.greentech.shared.domain.model.EstadoSalud
 fun ObservacionScreen(estado: ObservacionUiState, onEvent: (ObservacionEvent) -> Unit) {
     val selector = rememberSelectorFoto { onEvent(ObservacionEvent.FotoElegida(it)) }
     val permisoCamara = rememberEstadoPermiso(Permiso.CAMARA) { permitido -> if (permitido) selector.tomarFoto() }
-    var explicarCamara by rememberSaveable { mutableStateOf(false) }
     FormularioScaffold(
         titulo = Textos.Observacion.TITULO,
         subtitulo = estado.lote.contexto(),
@@ -136,27 +135,14 @@ fun ObservacionScreen(estado: ObservacionUiState, onEvent: (ObservacionEvent) ->
             onTomarFoto = {
                 onEvent(ObservacionEvent.CerrarOpcionesFoto)
                 // El permiso de cámara se explica antes de pedirlo (o se manda a Ajustes si se negó para siempre).
-                if (permisoCamara.concedido) selector.tomarFoto() else explicarCamara = true
+                // Sin permiso: diálogo del sistema directo; al permitir se abre la cámara (ver rememberEstadoPermiso).
+                if (permisoCamara.concedido) selector.tomarFoto() else permisoCamara.solicitar()
             },
             onElegirGaleria = {
                 onEvent(ObservacionEvent.CerrarOpcionesFoto)
                 selector.elegirDeGaleria()
             },
             onCerrar = { onEvent(ObservacionEvent.CerrarOpcionesFoto) },
-        )
-    }
-    if (explicarCamara) {
-        ConfirmSheet(
-            titulo = Textos.Permisos.CAMARA_TITULO,
-            mensaje = Textos.Permisos.CAMARA_FOTO_MENSAJE,
-            textoConfirmar = if (permisoCamara.negadoPermanente) Textos.Permisos.ABRIR_AJUSTES else Textos.Permisos.PERMITIR,
-            textoCancelar = Textos.Permisos.AHORA_NO,
-            icono = Icons.Outlined.PhotoCamera,
-            onConfirmar = {
-                explicarCamara = false
-                permisoCamara.solicitar()
-            },
-            onCancelar = { explicarCamara = false },
         )
     }
 }

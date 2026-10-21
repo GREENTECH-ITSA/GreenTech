@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -31,16 +32,21 @@ import androidx.lifecycle.compose.LifecycleEventEffect
  * Estado de un permiso de Android para Compose, sin Accompanist.
  *
  * - [isGranted] se vuelve a revisar en cada ON_RESUME (al volver de Ajustes, por ejemplo).
- * - [isPermanentlyDenied]: ya se pidió, se negó y el sistema no volverá a mostrar el diálogo
- *   (shouldShowRequestPermissionRationale = false). Solo queda [openAppSettings].
- * - [permission] = null cuando el permiso no existe en esta versión de Android (notificaciones
- *   antes de Android 13): ahí solo se pueden activar desde Ajustes.
+ * - [launchRequest] siempre intenta el diálogo del sistema: el usuario permite con un toque, sin ir a
+ *   Ajustes. Solo si Android ya no deja mostrarlo (se negó dos veces o "No volver a preguntar") se
+ *   abren los Ajustes de la app automáticamente, sin pasos intermedios.
+ * - [isPermanentlyDenied] se decide por la respuesta del sistema (el diálogo no apareció), no por
+ *   suposición; se borra en cuanto el permiso se concede, así quitarlo después desde Ajustes vuelve a
+ *   permitir el diálogo.
+ * - [permission] = null cuando el permiso no existe en esta versión de Android (notificaciones antes
+ *   de Android 13): ahí se abre directo la pantalla de notificaciones de la app.
  */
 @Stable
 class PermissionState internal constructor(
     val permission: String?,
     private val context: Context,
     private val isGrantedCheck: (Context) -> Boolean,
+    private val settingsIntent: (Context) -> Intent = ::appDetailsIntent,
 ) {
     var isGranted by mutableStateOf(isGrantedCheck(context))
         private set
@@ -53,40 +59,74 @@ class PermissionState internal constructor(
 
     private val prefs get() = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    private val wasRequested: Boolean
-        get() = permission != null && prefs.getBoolean(KEY_REQUESTED + permission, false)
+    /** El sistema ya no muestra el diálogo para este permiso (lo dijo su respuesta). */
+    private var blocked: Boolean
+        get() = permission != null && prefs.getBoolean(KEY_BLOCKED + permission, false)
+        set(value) {
+            if (permission != null) prefs.edit { putBoolean(KEY_BLOCKED + permission, value) }
+        }
+
+    private var requestedAt = 0L
 
     fun refresh() {
         isGranted = isGrantedCheck(context)
-        isPermanentlyDenied = when {
-            isGranted -> false
-            permission == null -> true
-            else -> wasRequested && activity?.let { !ActivityCompat.shouldShowRequestPermissionRationale(it, permission) } == true
-        }
+        if (isGranted) blocked = false
+        isPermanentlyDenied = !isGranted && (permission == null || blocked)
     }
 
-    /** Muestra el diálogo del sistema; si ya no se puede, abre Ajustes. */
+    /**
+     * Muestra el diálogo del sistema. Si Android ya no lo deja mostrar, abre los Ajustes de la app
+     * (o la pantalla de notificaciones si el permiso no existe en esta versión).
+     */
     fun launchRequest() {
         val launcher = launcher
-        if (permission == null || launcher == null || isPermanentlyDenied) {
+        if (permission == null || launcher == null) {
             openAppSettings()
             return
         }
-        prefs.edit { putBoolean(KEY_REQUESTED + permission, true) }
+        requestedAt = SystemClock.elapsedRealtime()
         launcher.launch(permission)
     }
 
+    /** Respuesta del diálogo. Una negativa inmediata, sin diálogo visible, significa que Android lo bloqueó. */
+    internal fun onResult(granted: Boolean) {
+        val activity = activity
+        if (!granted && permission != null && activity != null &&
+            !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+        ) {
+            val sinDialogo = SystemClock.elapsedRealtime() - requestedAt < UMBRAL_SIN_DIALOGO_MS
+            blocked = true
+            refresh()
+            if (sinDialogo) openAppSettings()
+            return
+        }
+        refresh()
+    }
+
     fun openAppSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
-        if (activity == null) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        runCatching { (activity ?: context).startActivity(intent) }
+        val origen = activity ?: context
+        val intent = settingsIntent(context).apply { if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+        runCatching { origen.startActivity(intent) }.onFailure {
+            runCatching { origen.startActivity(appDetailsIntent(context).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
     }
 
     private companion object {
         const val PREFS = "permisos"
-        const val KEY_REQUESTED = "pedido."
+        const val KEY_BLOCKED = "bloqueado."
+
+        /** Si el sistema responde en menos de esto, no llegó a mostrar el diálogo. */
+        const val UMBRAL_SIN_DIALOGO_MS = 400L
     }
 }
+
+/** Ajustes de la app (pantalla de permisos). */
+fun appDetailsIntent(context: Context): Intent =
+    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+
+/** Pantalla de notificaciones de la app: un solo interruptor, sin buscar en Ajustes. */
+fun notificationSettingsIntent(context: Context): Intent =
+    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
 
 /** Permiso de cámara: escanear QR, linterna y fotos. */
 fun cameraGranted(context: Context): Boolean =
@@ -110,11 +150,12 @@ fun rememberPermissionState(
         permission == null || ContextCompat.checkSelfPermission(ctx, permission) == PackageManager.PERMISSION_GRANTED
     },
     onResult: (Boolean) -> Unit = {},
+    settingsIntent: (Context) -> Intent = ::appDetailsIntent,
 ): PermissionState {
     val context = LocalContext.current
     val activity = LocalActivity.current
     val state = remember(permission) {
-        PermissionState(permission, context.applicationContext, isGrantedCheck).also {
+        PermissionState(permission, context.applicationContext, isGrantedCheck, settingsIntent).also {
             it.activity = activity
             it.refresh()
         }
@@ -122,7 +163,7 @@ fun rememberPermissionState(
     state.activity = activity
     val currentOnResult by rememberUpdatedState(onResult)
     state.launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        state.refresh()
+        state.onResult(granted)
         currentOnResult(granted)
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { state.refresh() }

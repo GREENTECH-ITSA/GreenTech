@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import com.greentech.app.permissions.PermissionState
 import com.greentech.app.permissions.cameraGranted
 import com.greentech.app.permissions.notificationsGranted
+import com.greentech.app.permissions.notificationSettingsIntent
 import com.greentech.app.permissions.notificationsPermission
 import com.greentech.app.permissions.rememberPermissionState
 import com.greentech.app.permissions.writeStoragePermission
@@ -14,7 +15,9 @@ import com.greentech.app.permissions.writeStoragePermission
 actual fun rememberEstadoPermiso(permiso: Permiso, alResponder: (Boolean) -> Unit): EstadoPermiso {
     val estado = when (permiso) {
         Permiso.CAMARA -> rememberPermissionState(Manifest.permission.CAMERA, ::cameraGranted, alResponder)
-        Permiso.NOTIFICACIONES -> rememberPermissionState(notificationsPermission, ::notificationsGranted, alResponder)
+        Permiso.NOTIFICACIONES -> rememberPermissionState(
+            notificationsPermission, ::notificationsGranted, alResponder, settingsIntent = ::notificationSettingsIntent,
+        )
         Permiso.GUARDAR_IMAGEN -> rememberPermissionState(writeStoragePermission, onResult = alResponder)
     }
     return remember(estado) { EstadoPermisoAndroid(estado) }

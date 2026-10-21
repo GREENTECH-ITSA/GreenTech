@@ -201,7 +201,9 @@ private fun Permisos() {
 private fun FilaPermiso(icono: ImageVector, titulo: String, permiso: EstadoPermiso) {
     val interaccion = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val c = GreenTechTheme.colors
-    Surface(onClick = permiso::abrirAjustes, color = Color.Transparent, interactionSource = interaccion, modifier = Modifier.efectoPresion(interaccion)) {
+    // Sin permiso: el diálogo del sistema (Android abre Ajustes solo si ya no deja preguntar).
+    // Con permiso: Ajustes, que es el único lugar donde se puede quitar.
+    Surface(onClick = { if (permiso.concedido) permiso.abrirAjustes() else permiso.solicitar() }, color = Color.Transparent, interactionSource = interaccion, modifier = Modifier.efectoPresion(interaccion)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = Dimens.filaLista).padding(horizontal = Dimens.lg, vertical = Dimens.sm),
             verticalAlignment = Alignment.CenterVertically,
@@ -210,7 +212,11 @@ private fun FilaPermiso(icono: ImageVector, titulo: String, permiso: EstadoPermi
             Spacer(Modifier.width(Dimens.lg))
             Column(Modifier.weight(1f)) {
                 Text(titulo, style = GtTexto.tituloTarjeta)
-                Text(Textos.Permisos.CAMBIAR_EN_AJUSTES, style = GtTexto.ayuda, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    if (permiso.concedido) Textos.Permisos.CAMBIAR_EN_AJUSTES else Textos.Permisos.TOCA_PARA_PERMITIR,
+                    style = GtTexto.ayuda,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Spacer(Modifier.width(Dimens.sm))
             // Texto + ícono: el estado no depende solo del color.

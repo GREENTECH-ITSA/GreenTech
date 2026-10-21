@@ -255,6 +255,7 @@ object Textos {
         const val AHORA_NO = "Ahora no"
         const val ABRIR_AJUSTES = "Abrir ajustes"
         const val PERMITIDO = "Permitido"
+        const val TOCA_PARA_PERMITIR = "Toca para permitir"
         const val NO_PERMITIDO = "No permitido"
         const val CAMARA = "Cámara"
         const val CAMARA_TITULO = "Usar la cámara"
