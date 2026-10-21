@@ -3,6 +3,7 @@ package com.greentech.app.platform
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Size
 import android.view.MotionEvent
@@ -30,6 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.common.sdkinternal.MlKitContext
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -116,6 +118,7 @@ actual class CameraScanner actual constructor() {
         val miGeneracion = ++generacion
         primerCuadro = true
         Medicion.iniciar(Medicion.QR_CAMARA_LISTA)
+        precalentarLector()
         val futuro = ProcessCameraProvider.getInstance(contexto)
         futuro.addListener({
             if (miGeneracion != generacion) return@addListener
@@ -123,6 +126,23 @@ actual class CameraScanner actual constructor() {
             ligarCasosDeUso(proveedor, ciclo, vista)
         }, ContextCompat.getMainExecutor(contexto))
     }
+
+    /**
+     * La primera decodificación de ML Kit carga el modelo (~1 s en gama baja). Se hace con una imagen vacía
+     * en el hilo de análisis mientras la cámara arranca, así el primer QR real ya no paga esa carga.
+     */
+    private fun precalentarLector() {
+        if (precalentado) return
+        precalentado = true
+        hiloAnalisis.execute {
+            val vacia = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888)
+            runCatching { Tasks.await(lector.process(InputImage.fromBitmap(vacia, 0))) }
+            vacia.recycle()
+        }
+    }
+
+    @Volatile
+    private var precalentado = false
 
     private fun ligarCasosDeUso(proveedor: ProcessCameraProvider, ciclo: LifecycleOwner, vista: PreviewView) {
         val vistaPrevia = Preview.Builder().build().also { it.setSurfaceProvider(vista.surfaceProvider) }

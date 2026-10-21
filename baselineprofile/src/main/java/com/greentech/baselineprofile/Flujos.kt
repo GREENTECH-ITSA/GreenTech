@@ -79,6 +79,7 @@ fun MacrobenchmarkScope.irAPestana(nombre: String) {
 /** Abre la lista de lotes y espera a que carguen (los datos Fake tardan 600–900 ms). */
 fun MacrobenchmarkScope.abrirListaLotes() {
     irAPestana("Lotes")
+    esperar(By.desc("Buscar por especie o código"))
     esperar(By.textContains("GT-"))
 }
 
@@ -115,7 +116,13 @@ fun MacrobenchmarkScope.consultarPorCodigo(codigo: String = CODIGO_LOTE) {
     device.findObject(By.text("Escribir código del lote")).click()
     val campo = esperar(By.clazz("android.widget.EditText"))
     campo.text = codigo
-    ocultarTeclado()
-    esperar(By.text("Abrir lote")).click()
-    esperar(By.text("Plantas disponibles"))
+    // Solo si el teclado tapa el botón se cierra (un "atrás" sin teclado cerraría la hoja).
+    val boton = device.wait(Until.findObject(By.text("Abrir lote")), 2_000) ?: run {
+        ocultarTeclado()
+        esperar(By.text("Abrir lote"))
+    }
+    boton.click()
+    // Si el toque llegó antes de que el botón se habilitara con el código, se toca otra vez.
+    if (!existe(By.text("Plantas disponibles"), 5_000)) device.findObject(By.text("Abrir lote"))?.click()
+    esperar(By.text("Plantas disponibles"), 15_000)
 }

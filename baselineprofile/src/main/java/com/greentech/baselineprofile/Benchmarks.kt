@@ -1,8 +1,9 @@
-@file:OptIn(ExperimentalMetricApi::class)
+@file:OptIn(ExperimentalMetricApi::class, ExperimentalMacrobenchmarkApi::class)
 
 package com.greentech.baselineprofile
 
 import androidx.benchmark.macro.CompilationMode
+import androidx.benchmark.macro.ExperimentalMacrobenchmarkApi
 import androidx.benchmark.macro.ExperimentalMetricApi
 import androidx.benchmark.macro.FrameTimingMetric
 import androidx.benchmark.macro.MacrobenchmarkScope
@@ -53,13 +54,37 @@ fun prepararCompilacion() {
     device.executeShellCommand("cmd package compile -f -m speed-profile $PAQUETE")
 }
 
-/** Deja la app abierta y con sesión de empleado (la sesión de los Fakes vive en memoria). */
+/** Proceso en el que ya se inició sesión (la sesión de los Fakes vive en memoria) y con qué correo. */
+private var pidConSesion: String? = null
+private var correoConSesion: String? = null
+
+private fun MacrobenchmarkScope.pid(): String = device.executeShellCommand("pidof $PAQUETE").trim()
+
+/**
+ * Deja la app abierta, con sesión y en una pestaña principal. Si el proceso es el mismo en el que ya se
+ * entró, solo regresa con "atrás" hasta ver la barra; si no, arranca limpio (force-stop borra la pila
+ * guardada, así no se restaura una pantalla sin sesión) y entra.
+ */
 private fun MacrobenchmarkScope.asegurarSesion(correo: String = CORREO_EMPLEADO, password: String = PASSWORD_EMPLEADO) {
     concederPermisos()
-    if (existe(By.text("Iniciar sesión"), 300) || !existe(By.pkg(PAQUETE), 300)) {
-        if (!existe(By.text("Iniciar sesión"), 300)) startActivityAndWait()
-        iniciarSesion(correo, password)
+    val pestana = By.text(if (correo == CORREO_ADMIN) "Personal" else "Inicio")
+    if (pid().isNotEmpty() && pid() == pidConSesion && correo == correoConSesion) {
+        repeat(4) {
+            if (existe(pestana, 500)) return
+            device.pressBack()
+            device.waitForIdle()
+        }
     }
+    arrancarLimpio()
+    iniciarSesion(correo, password)
+    esperar(pestana)
+    pidConSesion = pid()
+    correoConSesion = correo
+}
+
+private fun MacrobenchmarkScope.arrancarLimpio() {
+    device.executeShellCommand("am force-stop $PAQUETE")
+    startActivityAndWait()
 }
 
 @RunWith(AndroidJUnit4::class)
@@ -82,7 +107,10 @@ class ArranqueBenchmark {
         compilationMode = compilacion,
         startupMode = modo,
         iterations = 10,
-        setupBlock = { pressHome() },
+        setupBlock = {
+            pressHome()
+            if (modo == StartupMode.COLD) device.executeShellCommand("am force-stop $PAQUETE")
+        },
     ) {
         startActivityAndWait()
         esperarLogin()
@@ -109,7 +137,7 @@ class FlujosBenchmark {
         iterations = 8,
         setupBlock = {
             pressHome()
-            startActivityAndWait()
+            arrancarLimpio()
             concederPermisos()
             esperarLogin()
             val campos = device.findObjects(By.clazz("android.widget.EditText"))
@@ -131,7 +159,7 @@ class FlujosBenchmark {
         iterations = 8,
         setupBlock = {
             asegurarSesion()
-            if (!existe(By.textContains("GT-"), 300)) abrirListaLotes()
+            if (!existe(By.desc("Buscar por especie o código"), 300)) abrirListaLotes()
         },
     ) {
         desplazarLista()
@@ -145,7 +173,7 @@ class FlujosBenchmark {
         iterations = 8,
         setupBlock = {
             asegurarSesion()
-            if (!existe(By.textContains("GT-"), 300)) abrirListaLotes()
+            if (!existe(By.desc("Buscar por especie o código"), 300)) abrirListaLotes()
         },
     ) {
         abrirDetalleDesdeLista()
@@ -175,7 +203,7 @@ class FlujosBenchmark {
         iterations = 6,
         setupBlock = {
             pressHome()
-            startActivityAndWait()
+            arrancarLimpio()
             concederPermisos()
             iniciarSesion(CORREO_ADMIN, PASSWORD_ADMIN)
         },

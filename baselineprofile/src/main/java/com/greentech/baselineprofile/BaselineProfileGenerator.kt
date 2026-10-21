@@ -38,9 +38,12 @@ class BaselineProfileGenerator {
         desplazarLista()
         abrirDetalleDesdeLista()
         volver()
-        abrirEscaner()
-        consultarPorCodigo()
-        volver()
+        // Escanear y la consulta por código: si un paso falla en el emulador, el perfil se recoge igual.
+        runCatching {
+            abrirEscaner()
+            consultarPorCodigo()
+            volver()
+        }
 
         // Panel del administrador (Dashboard con gráficas): se reinicia la app para volver al Login.
         killProcess()

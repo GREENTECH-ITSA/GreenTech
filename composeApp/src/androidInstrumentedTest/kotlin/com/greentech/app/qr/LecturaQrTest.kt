@@ -64,7 +64,11 @@ class LecturaQrTest {
             ladoPorTamano.forEach { (tamano, lado) -> add("tamaño $tamano" to cuadro(lado)) }
             add("poca luz con linterna" to cuadro(250, oscurecer = 0.45f, ruido = 18))
             add("reflejo de luz" to cuadro(250, reflejo = true))
-            add("inclinación 12°" to cuadro(250, giro = 12f, perspectiva = 0.08f))
+            add("giro 12°" to cuadro(250, giro = 12f))
+            add("inclinación leve (perspectiva 4 %)" to cuadro(250, perspectiva = 0.04f))
+            add("etiqueta inclinada 30°" to cuadro(250, inclinacion = 30f))
+            add("etiqueta inclinada 30° + giro 12°" to cuadro(250, inclinacion = 30f, giro = 12f))
+            add("inclinación leve + giro 8°" to cuadro(250, giro = 8f, perspectiva = 0.04f))
             add("mancha parcial (≈8 % del código)" to cuadro(250, mancha = true))
             add("3 cm + poca luz" to cuadro(150, oscurecer = 0.5f, ruido = 12))
         }
@@ -80,6 +84,28 @@ class LecturaQrTest {
         }
         val fallos = resultados.filterNot { it.second }.map { it.first }
         assertTrue("No se leyó: $fallos", fallos.isEmpty())
+    }
+
+    /** Casos más duros que solo se registran (para conocer el límite), sin hacer fallar la prueba. */
+    @Test
+    fun limitesDeInclinacion() {
+        listOf(150, 250, 400).forEach { lado ->
+            listOf(20f, 35f, 45f, 55f, 65f).forEach { grados ->
+                val leido = runCatching {
+                    Tasks.await(lector.process(InputImage.fromBitmap(cuadro(lado, inclinacion = grados), 0))).firstOrNull()?.rawValue
+                }.getOrNull()
+                Log.i(ETIQUETA, "${if (leido == codigo) "LEE" else "FALLA"} · límite: etiqueta inclinada ${grados.toInt()}° · QR de $lado px")
+            }
+        }
+        // Distorsión sintética combinada (cizalla + trapecio), más dura que una inclinación física.
+        listOf(0.06f, 0.08f, 0.10f).forEach { p ->
+            listOf(0f, 12f).forEach { g ->
+                val leido = runCatching {
+                    Tasks.await(lector.process(InputImage.fromBitmap(cuadro(250, giro = g, perspectiva = p), 0))).firstOrNull()?.rawValue
+                }.getOrNull()
+                Log.i(ETIQUETA, "${if (leido == codigo) "LEE" else "FALLA"} · límite: distorsión combinada ${(p * 100).toInt()} % + giro ${g.toInt()}°")
+            }
+        }
     }
 
     /** Tiempo de decodificación de un cuadro de 1280×720 con el QR de 5 cm (40 repeticiones). */
@@ -103,6 +129,7 @@ class LecturaQrTest {
         reflejo: Boolean = false,
         giro: Float = 0f,
         perspectiva: Float = 0f,
+        inclinacion: Float = 0f,
         mancha: Boolean = false,
     ): Bitmap {
         val fondo = Bitmap.createBitmap(1280, 720, Bitmap.Config.ARGB_8888)
@@ -115,6 +142,20 @@ class LecturaQrTest {
             val h = escalado.height.toFloat()
             val d = w * perspectiva
             m.setPolyToPoly(floatArrayOf(0f, 0f, w, 0f, w, h, 0f, h), 0, floatArrayOf(d, 0f, w - d, d, w, h, 0f, h - d), 0, 4)
+        }
+        if (inclinacion != 0f) {
+            // Etiqueta inclinada frente a la cámara: rotación real en el eje X con perspectiva.
+            val camara = android.graphics.Camera()
+            val proyeccion = Matrix()
+            camara.save()
+            // Cámara a ~5 veces el lado del QR (una etiqueta de 5 cm vista a 25 cm). Camera usa pulgadas (72 px).
+            camara.setLocation(0f, 0f, -5f * escalado.width / 72f)
+            camara.rotateX(inclinacion)
+            camara.getMatrix(proyeccion)
+            camara.restore()
+            proyeccion.preTranslate(-escalado.width / 2f, -escalado.height / 2f)
+            proyeccion.postTranslate(escalado.width / 2f, escalado.height / 2f)
+            m.postConcat(proyeccion)
         }
         m.postRotate(giro, escalado.width / 2f, escalado.height / 2f)
         m.postTranslate((1280 - escalado.width) / 2f, (720 - escalado.height) / 2f)
