@@ -1,5 +1,6 @@
 package com.greentech.app.ui.screens.employee.monitoreo
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import com.greentech.app.platform.LocalNivelRendimiento
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
@@ -125,6 +126,13 @@ fun EscanerQrScreen(
     BarrasSistema.ForzarOscuras()
     GreenTechTheme(modo = ThemeMode.OSCURO) {
         GtScaffold(topBar = { GtTopBar(Textos.Escaner.TITULO, onAyuda = { onEvent(EscanerQrEvent.Ayuda) }, principal = true) }) { padding ->
+          BoxWithConstraints(Modifier.fillMaxSize()) {
+            // En pantallas bajas (p. ej. 360 × 640 dp) el visor se reduce para que la instrucción y
+            // "Escribir código del lote" queden siempre sobre la barra inferior; en el resto no cambia.
+            val altoVisor = (
+                maxHeight - padding.calculateTopPadding() - padding.calculateBottomPadding() -
+                    Dimens.lg * 2 - Dimens.lgx * 2 - ReservaBajoVisor
+                ).coerceAtLeast(VisorMinimo)
             Column(
                 Modifier
                     .fillMaxSize()
@@ -136,7 +144,7 @@ fun EscanerQrScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val vista = rememberHazeState()
-                Box(Modifier.widthIn(max = 360.dp).fillMaxWidth().aspectRatio(0.82f)) {
+                Box(Modifier.widthIn(max = 360.dp).fillMaxWidth().heightIn(max = altoVisor).aspectRatio(0.82f, matchHeightConstraintsFirst = true)) {
                     if (estado.camaraReal && !permiso.concedido) {
                         SinAccesoCamara(permiso, Modifier.fillMaxSize())
                     } else {
@@ -163,6 +171,7 @@ fun EscanerQrScreen(
                     icono = Icons.Outlined.Keyboard,
                 )
             }
+          }
         }
         if (estado.mostrarManual) HojaCodigoManual(estado, onEvent)
         if (explicarPermiso) {
@@ -383,3 +392,9 @@ private fun EscanerPreviewClaro() {
 private fun EscanerPreviewOscuro() {
     GreenTechTheme(modo = ThemeMode.OSCURO) { EscanerQrScreen(EscanerQrUiState(linterna = true, mostrarManual = true), onEvent = {}) }
 }
+
+/** Alto de la instrucción (2 líneas) y del botón "Escribir código del lote" debajo del visor. */
+private val ReservaBajoVisor = 120.dp
+
+/** El visor nunca baja de este alto (con letra muy grande la pantalla se desplaza). */
+private val VisorMinimo = 220.dp

@@ -24,7 +24,11 @@ const val CODIGO_LOTE = "GT-8F2A91C0D4"
 private const val ESPERA_MS = 10_000L
 
 fun MacrobenchmarkScope.esperar(selector: BySelector, ms: Long = ESPERA_MS): UiObject2 =
-    device.wait(Until.findObject(selector), ms) ?: error("No apareció en pantalla: $selector")
+    device.wait(Until.findObject(selector), ms) ?: run {
+        // Para diagnosticar: qué había en pantalla cuando no apareció.
+        val visibles = device.findObjects(By.pkg(PAQUETE)).mapNotNull { it.text ?: it.contentDescription }.distinct().take(25)
+        error("No apareció en pantalla: $selector. Visible: $visibles")
+    }
 
 fun MacrobenchmarkScope.existe(selector: BySelector, ms: Long = 1_500L): Boolean =
     device.wait(Until.hasObject(selector), ms) == true
@@ -37,7 +41,7 @@ fun MacrobenchmarkScope.concederPermisos() {
 
 /** Espera el Login (después del splash). */
 fun MacrobenchmarkScope.esperarLogin() {
-    esperar(By.text("Iniciar sesión"), 15_000)
+    esperar(By.text("Iniciar sesión"), 30_000)
 }
 
 /** Cierra el teclado si está abierto (el botón de enviar puede quedar debajo y UiAutomator no lo ve). */
@@ -61,7 +65,17 @@ fun MacrobenchmarkScope.iniciarSesion(correo: String = CORREO_EMPLEADO, password
 }
 
 fun MacrobenchmarkScope.cerrarAvisosDePrimerUso() {
-    if (existe(By.text("Omitir"), 5_000)) device.findObject(By.text("Omitir")).click()
+    // En equipos lentos la introducción aparece varios segundos después de entrar: se espera a que salga
+    // la introducción o la barra del panel (y un momento más por si la introducción llega después).
+    val fin = System.currentTimeMillis() + 20_000
+    while (System.currentTimeMillis() < fin) {
+        if (existe(By.text("Omitir"), 500)) {
+            device.findObject(By.text("Omitir"))?.click()
+            device.waitForIdle()
+            break
+        }
+        if ((existe(By.text("Inicio"), 300) || existe(By.text("Personal"), 300)) && !existe(By.text("Omitir"), 3_000)) break
+    }
     if (existe(By.text("Ahora no"), 1_500)) device.findObject(By.text("Ahora no")).click()
     device.waitForIdle()
 }
@@ -84,7 +98,19 @@ fun MacrobenchmarkScope.abrirListaLotes() {
 }
 
 fun MacrobenchmarkScope.desplazarLista() {
-    val lista = device.findObject(By.scrollable(true)) ?: return
+    // La lista vertical es el desplazable más alto (las filas de chips de filtro también son desplazables).
+    val lista = device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }
+    if (lista == null) {
+        // Algunas versiones no reportan la lista de Compose como desplazable: se desliza por coordenadas.
+        val x = device.displayWidth / 2
+        repeat(2) {
+            device.swipe(x, device.displayHeight * 3 / 4, x, device.displayHeight / 4, 15)
+            device.waitForIdle()
+        }
+        device.swipe(x, device.displayHeight / 4, x, device.displayHeight * 3 / 4, 15)
+        device.waitForIdle()
+        return
+    }
     // Margen para no iniciar el gesto sobre la barra de gestos del sistema.
     lista.setGestureMargin(device.displayWidth / 5)
     repeat(2) {
