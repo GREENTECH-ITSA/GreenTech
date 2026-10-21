@@ -133,12 +133,14 @@ class FlujosBenchmark {
         packageName = PAQUETE,
         metrics = listOf(FrameTimingMetric(), TraceSectionMetric("login_a_inicio")),
         compilationMode = compilacion,
-        startupMode = StartupMode.COLD,
+        // Sin startupMode: con COLD Macrobenchmark mata el proceso después de la preparación y se perdería
+        // lo escrito; cada iteración arranca limpia en setupBlock.
         iterations = 8,
         setupBlock = {
             pressHome()
-            arrancarLimpio()
+            // Los permisos se conceden antes de abrir la app: concederlos con la app abierta la saca de pantalla.
             concederPermisos()
+            arrancarLimpio()
             esperarLogin()
             val campos = device.findObjects(By.clazz("android.widget.EditText"))
             campos[0].text = CORREO_EMPLEADO
@@ -199,12 +201,13 @@ class FlujosBenchmark {
         packageName = PAQUETE,
         metrics = listOf(FrameTimingMetric(), MemoryUsageMetric(MemoryUsageMetric.Mode.Last)),
         compilationMode = compilacion,
-        startupMode = StartupMode.COLD,
+        // Sin startupMode (ver loginAInicio): la sesión de administrador se abre en setupBlock.
         iterations = 6,
         setupBlock = {
             pressHome()
-            arrancarLimpio()
+            // Los permisos se conceden antes de abrir la app: concederlos con la app abierta la saca de pantalla.
             concederPermisos()
+            arrancarLimpio()
             iniciarSesion(CORREO_ADMIN, PASSWORD_ADMIN)
         },
     ) {

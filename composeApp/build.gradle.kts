@@ -68,6 +68,7 @@ kotlin {
         androidInstrumentedTest.dependencies {
             implementation(libs.androidx.test.ext.junit)
             implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.uiautomator)
             implementation(libs.kotlin.test)
         }
         androidMain.dependencies {
