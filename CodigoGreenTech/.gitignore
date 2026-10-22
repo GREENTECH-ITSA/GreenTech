@@ -1,0 +1,41 @@
+*.iml
+.kotlin
+.gradle
+**/build/
+!src/**/build/
+local.properties
+.idea
+.DS_Store
+captures
+.externalNativeBuild
+.cxx
+
+# Firma de release (no se versiona)
+keystore.properties
+*.jks
+*.keystore
+
+# Secretos y configuración local (repositorio público)
+google-services.json
+.mcp.json
+.claude/settings.local.json
+
+# Salidas de compilación y herramientas
+build/
+*/build/
+.gradle/
+.idea/
+.kotlin/
+captures/
+*.apk
+*.aab
+*.hprof
+*.log
+
+# Resultados de benchmarks y emuladores
+**/outputs/connected_android_test_additional_output/
+benchmark-results/
+*-benchmarkData.json
+*.trace
+*.perfetto-trace
+emulator-*.txt
