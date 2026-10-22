@@ -1,0 +1,17 @@
+<resources>
+    <!-- Ventana de arranque en claro (tema por defecto); Compose aplica después el tema elegido. -->
+    <style name="Theme.GreenTech" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/gt_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Arranque (androidx.core:core-splashscreen, también en Android 8–11): fondo del tema y el emblema.
+         Se quita en cuanto Compose dibuja el primer frame y entonces rige Theme.GreenTech. -->
+    <style name="Theme.GreenTech.Arranque" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/gt_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.GreenTech</item>
+    </style>
+</resources>

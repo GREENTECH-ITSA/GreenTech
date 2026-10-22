@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- PNG temporal del QR para compartir -->
+    <cache-path name="qr" path="qr/" />
+    <!-- Fotos de observaciones tomadas con la cámara -->
+    <files-path name="fotos" path="fotos/" />
+</paths>

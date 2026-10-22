@@ -1,0 +1,7 @@
+# Configuración local de herramientas (no se versiona)
+.mcp.json
+.claude/settings.local.json
+.DS_Store
+*.log
+.gradle/
+.idea/
