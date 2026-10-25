@@ -1,6 +1,6 @@
 # Configuración local de herramientas (no se versiona)
 .mcp.json
-.claude/settings.local.json
+.claude/
 .DS_Store
 *.log
 .gradle/
